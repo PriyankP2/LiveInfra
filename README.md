@@ -1,17 +1,8 @@
 <div align="center">
 
-```
-                        ██╗     ██╗██╗   ██╗███████╗██╗███╗   ██╗███████╗██████╗  █████╗
-                        ██║     ██║██║   ██║██╔════╝██║████╗  ██║██╔════╝██╔══██╗██╔══██╗
-                        ██║     ██║██║   ██║█████╗  ██║██╔██╗ ██║█████╗  ██████╔╝███████║
-                        ██║     ██║╚██╗ ██╔╝██╔══╝  ██║██║╚██╗██║██╔══╝  ██╔══██╗██╔══██║
-                        ███████╗██║ ╚████╔╝ ███████╗██║██║ ╚████║██║     ██║  ██║██║  ██║
-                        ╚══════╝╚═╝  ╚═══╝  ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝
-```
+<img width="863" height="154" alt="image" src="https://github.com/user-attachments/assets/4a9c3f61-0d02-4fb7-b459-7d1fa81a4214" />
 
-**Your AWS infrastructure, finally explained.**
-
-Live dependency graphs · Plain-English runbooks · Blast-radius calculator · Enriched incident alerts
+**Live dependency graphs · Plain-English runbooks · Blast-radius calculator · Enriched incident alerts**
 
 [![Status](https://img.shields.io/badge/status-building_in_public-brightgreen)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue)](#)
