@@ -16,7 +16,7 @@ Live dependency graphs · Plain-English runbooks · Blast-radius calculator · E
 [![Status](https://img.shields.io/badge/status-building_in_public-brightgreen)](#)
 [![License](https://img.shields.io/badge/license-Apache-blue)](#)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-orange)](#contributing)
-[![Twitter](https://img.shields.io/badge/follow_the_build-%40yourhandle-1DA1F2)](https://twitter.com)
+[![Twitter](https://img.shields.io/badge/follow_the_build-%40https://github.com/PriyankP2/LiveInfra)](https://twitter.com)
 
 </div>
 
