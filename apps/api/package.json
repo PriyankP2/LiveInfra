@@ -1,0 +1,31 @@
+{
+  "name": "@liveinfra/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@liveinfra/shared": "workspace:*",
+    "@trpc/server": "^11.1.2",
+    "bullmq": "^5.53.3",
+    "fastify": "^5.3.3",
+    "@fastify/cors": "^10.0.3",
+    "@fastify/helmet": "^13.0.1",
+    "ioredis": "^5.6.1",
+    "neo4j-driver": "^5.28.1",
+    "pino": "^9.7.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@liveinfra/tsconfig": "workspace:*",
+    "@types/node": "^20.19.43",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

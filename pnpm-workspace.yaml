@@ -1,0 +1,16 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  esbuild: true
+  msgpackr-extract: true
+
+onlyBuiltDependencies:
+  - sharp
+  - unrs-resolver
+  - "@biomejs/biome"
+  - esbuild
+  - msgpackr-extract
