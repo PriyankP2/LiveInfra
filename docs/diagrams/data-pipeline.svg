@@ -1,0 +1,248 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 640" width="1400" height="640" style="background:#0a0e1a">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+    </marker>
+    <marker id="arr-g" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#10b981"/>
+    </marker>
+    <marker id="arr-a" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f59e0b"/>
+    </marker>
+    <marker id="arr-p" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#c084fc"/>
+    </marker>
+    <filter id="glow-g">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="dots2" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#1f2937" opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <rect width="1400" height="640" fill="#0a0e1a"/>
+  <rect width="1400" height="640" fill="url(#dots2)"/>
+
+  <!-- Title -->
+  <text x="700" y="38" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle">LiveInfra — Data Pipeline</text>
+  <text x="700" y="58" fill="#64748b" font-family="system-ui,sans-serif" font-size="12" text-anchor="middle">How AWS infrastructure data flows from source to graph to UI</text>
+
+  <!-- ══ STAGE 1: AWS DATA SOURCES ══ -->
+  <rect x="20" y="80" width="220" height="490" rx="10" fill="#111827" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="20" y="80" width="220" height="36" rx="10" fill="#431407"/>
+  <text x="130" y="103" fill="#fb923c" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">AWS DATA SOURCES</text>
+
+  <rect x="35" y="128" width="190" height="72" rx="6" fill="#1c1107" stroke="#ea580c" stroke-width="1"/>
+  <text x="130" y="148" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">AWS Config</text>
+  <text x="130" y="163" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">SelectAggregateResourceConfig</text>
+  <text x="130" y="177" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Resource inventory + relationships</text>
+  <text x="130" y="191" fill="#f97316" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Primary inventory source ★</text>
+
+  <rect x="35" y="212" width="190" height="68" rx="6" fill="#1c1107" stroke="#ea580c" stroke-width="1"/>
+  <text x="130" y="232" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">VPC Flow Logs</text>
+  <text x="130" y="247" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">S3 export · Streaming parse</text>
+  <text x="130" y="261" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">IP→ENI→Resource mapping</text>
+  <text x="130" y="275" fill="#f97316" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Actual traffic edges</text>
+
+  <rect x="35" y="292" width="190" height="68" rx="6" fill="#1c1107" stroke="#ea580c" stroke-width="1"/>
+  <text x="130" y="312" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">CloudTrail</text>
+  <text x="130" y="327" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">LookupEvents API</text>
+  <text x="130" y="341" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Who changed what + when</text>
+  <text x="130" y="355" fill="#f97316" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Stored in PostgreSQL only</text>
+
+  <rect x="35" y="372" width="190" height="68" rx="6" fill="#1c1107" stroke="#ea580c" stroke-width="1"/>
+  <text x="130" y="392" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">AWS SDK v3 Direct</text>
+  <text x="130" y="407" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Lambda event source mappings</text>
+  <text x="130" y="421" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">EventBridge rule targets</text>
+  <text x="130" y="435" fill="#f97316" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Fills Config relationship gaps</text>
+
+  <rect x="35" y="452" width="190" height="68" rx="6" fill="#1c1107" stroke="#ea580c" stroke-width="1"/>
+  <text x="130" y="472" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">CloudWatch + EventBridge</text>
+  <text x="130" y="487" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Alarm states · Metric data</text>
+  <text x="130" y="501" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">EventBridge → HTTP push</text>
+  <text x="130" y="515" fill="#f97316" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Real-time change triggers</text>
+
+  <!-- Arrows to stage 2 -->
+  <line x1="241" y1="164" x2="295" y2="200" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="241" y1="246" x2="295" y2="280" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="241" y1="326" x2="295" y2="360" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="241" y1="406" x2="295" y2="440" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="241" y1="486" x2="295" y2="490" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ STAGE 2: SCANNER PROCESSING ══ -->
+  <rect x="300" y="80" width="240" height="490" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.5"/>
+  <rect x="300" y="80" width="240" height="36" rx="10" fill="#1c0f00"/>
+  <text x="420" y="103" fill="#fbbf24" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">SCANNER PROCESSING</text>
+
+  <rect x="315" y="128" width="210" height="80" rx="6" fill="#1c1a00" stroke="#ca8a04" stroke-width="1"/>
+  <text x="420" y="148" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Resource Collectors</text>
+  <text x="420" y="163" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">EC2 · RDS · Lambda · ALB</text>
+  <text x="420" y="177" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">SQS · S3 · VPC · Subnet · SG</text>
+  <text x="420" y="191" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">RDS Proxy · Step Functions</text>
+  <text x="420" y="205" fill="#ca8a04" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">BullMQ parallel jobs per type</text>
+
+  <rect x="315" y="222" width="210" height="80" rx="6" fill="#1c1a00" stroke="#ca8a04" stroke-width="1"/>
+  <text x="420" y="242" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Rate Limit Guardian</text>
+  <text x="420" y="257" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Exponential backoff + jitter</text>
+  <text x="420" y="271" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">100ms delay between types</text>
+  <text x="420" y="285" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Upstash cache (5-min TTL)</text>
+  <text x="420" y="299" fill="#ca8a04" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Never duplicate API calls</text>
+
+  <rect x="315" y="316" width="210" height="80" rx="6" fill="#1c1a00" stroke="#ca8a04" stroke-width="1"/>
+  <text x="420" y="336" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Flow Log Parser</text>
+  <text x="420" y="351" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">S3 streaming (no full-load)</text>
+  <text x="420" y="365" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">ENI cache refresh every 5min</text>
+  <text x="420" y="379" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">IP → Resource ID resolution</text>
+  <text x="420" y="393" fill="#ca8a04" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Behavioral edges (actual traffic)</text>
+
+  <rect x="315" y="410" width="210" height="80" rx="6" fill="#1c1a00" stroke="#ca8a04" stroke-width="1"/>
+  <text x="420" y="430" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Relationship Extractor</text>
+  <text x="420" y="445" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Config RELATED_TO edges</text>
+  <text x="420" y="459" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Lambda event source mappings</text>
+  <text x="420" y="473" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">EventBridge rule targets</text>
+  <text x="420" y="487" fill="#ca8a04" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Structural edges (intended arch)</text>
+
+  <rect x="315" y="504" width="210" height="56" rx="6" fill="#1c1a00" stroke="#ca8a04" stroke-width="1"/>
+  <text x="420" y="524" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">IAM AssumeRole</text>
+  <text x="420" y="539" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">ExternalId per customer</text>
+  <text x="420" y="553" fill="#ca8a04" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Cross-account proactive refresh</text>
+
+  <!-- Arrows to stage 3 -->
+  <line x1="541" y1="290" x2="595" y2="290" stroke="#f59e0b" stroke-width="2" marker-end="url(#arr-a)"/>
+
+  <!-- ══ STAGE 3: STORAGE ROUTING ══ -->
+  <rect x="600" y="80" width="240" height="490" rx="10" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <rect x="600" y="80" width="240" height="36" rx="10" fill="#0f172a"/>
+  <text x="720" y="103" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">STORAGE ROUTING</text>
+
+  <rect x="615" y="128" width="210" height="80" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+  <text x="720" y="148" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Neo4j AuraDB</text>
+  <text x="720" y="163" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Current topology ONLY</text>
+  <text x="720" y="177" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">MERGE nodes + edges</text>
+  <text x="720" y="191" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Structural + behavioral edges</text>
+  <text x="720" y="205" fill="#10b981" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Blast radius traversal &lt;100ms</text>
+
+  <rect x="615" y="222" width="210" height="80" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="720" y="242" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">PostgreSQL (Supabase)</text>
+  <text x="720" y="257" fill="#7dd3fc" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">History + metadata</text>
+  <text x="720" y="271" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">CloudTrail events (24h window)</text>
+  <text x="720" y="285" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">RCA outputs · Alert history</text>
+  <text x="720" y="299" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Resource state table (current)</text>
+
+  <rect x="615" y="316" width="210" height="80" rx="6" fill="#431407" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="720" y="336" fill="#fde68a" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Upstash Redis</text>
+  <text x="720" y="351" fill="#fcd34d" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Ephemeral cache</text>
+  <text x="720" y="365" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">AWS API response cache (5m TTL)</text>
+  <text x="720" y="379" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Flow log anomaly flags</text>
+  <text x="720" y="393" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">BullMQ job state</text>
+
+  <rect x="615" y="410" width="210" height="80" rx="6" fill="#1c0f30" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="720" y="430" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">S3 Parquet Snapshots</text>
+  <text x="720" y="445" fill="#c084fc" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Temporal history (Phase 2)</text>
+  <text x="720" y="459" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Full graph snapshot every 5min</text>
+  <text x="720" y="473" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">DuckDB diff queries</text>
+  <text x="720" y="487" fill="#c084fc" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Infrastructure DVR</text>
+
+  <rect x="615" y="504" width="210" height="56" rx="6" fill="#0c1a1a" stroke="#06b6d4" stroke-width="1"/>
+  <text x="720" y="524" fill="#67e8f9" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Supabase Realtime</text>
+  <text x="720" y="539" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Push graph updates to frontend</text>
+  <text x="720" y="553" fill="#06b6d4" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">WS subscription channel</text>
+
+  <!-- Arrows to stage 4 -->
+  <line x1="841" y1="290" x2="890" y2="290" stroke="#3b82f6" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ══ STAGE 4: API + AI ══ -->
+  <rect x="895" y="80" width="240" height="490" rx="10" fill="#111827" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="895" y="80" width="240" height="36" rx="10" fill="#2e1065"/>
+  <text x="1015" y="103" fill="#c4b5fd" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">API + AI LAYER</text>
+
+  <rect x="910" y="128" width="210" height="80" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+  <text x="1015" y="148" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">tRPC Graph Router</text>
+  <text x="1015" y="163" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Neo4j query → graphology</text>
+  <text x="1015" y="177" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Blast radius traversal API</text>
+  <text x="1015" y="191" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Incident feed queries</text>
+  <text x="1015" y="205" fill="#6366f1" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Full TypeScript end-to-end</text>
+
+  <rect x="910" y="222" width="210" height="80" rx="6" fill="#0f2a1a" stroke="#10b981" stroke-width="1.5"/>
+  <text x="1015" y="242" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Claude claude-sonnet-4-6</text>
+  <text x="1015" y="257" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">AI-RCA Pipeline</text>
+  <text x="1015" y="271" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Graph ctx + CloudTrail + Flow logs</text>
+  <text x="1015" y="285" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Structured JSON + evidence array</text>
+  <text x="1015" y="299" fill="#10b981" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Streaming tokens → frontend</text>
+
+  <rect x="910" y="316" width="210" height="80" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+  <text x="1015" y="336" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Webhook Handlers</text>
+  <text x="1015" y="351" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">PagerDuty / OpsGenie</text>
+  <text x="1015" y="365" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Validate sig → parse → enrich</text>
+  <text x="1015" y="379" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Auto-trigger RCA pipeline</text>
+  <text x="1015" y="393" fill="#6366f1" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">ARN fuzzy-match resolver</text>
+
+  <rect x="910" y="410" width="210" height="80" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+  <text x="1015" y="430" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Clerk Auth Middleware</text>
+  <text x="1015" y="445" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">JWT validation per request</text>
+  <text x="1015" y="459" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Org-scoped data isolation</text>
+  <text x="1015" y="473" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Row-level security (Supabase)</text>
+  <text x="1015" y="487" fill="#6366f1" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">SSO/SAML for enterprise</text>
+
+  <rect x="910" y="504" width="210" height="56" rx="6" fill="#1e1b4b" stroke="#6366f1" stroke-width="1"/>
+  <text x="1015" y="524" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Stripe Billing</text>
+  <text x="1015" y="539" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Usage metering · Subscription mgmt</text>
+  <text x="1015" y="553" fill="#6366f1" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Resource count value metric</text>
+
+  <!-- Arrows to stage 5 -->
+  <line x1="1136" y1="290" x2="1185" y2="290" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr-p)"/>
+
+  <!-- ══ STAGE 5: FRONTEND UI ══ -->
+  <rect x="1190" y="80" width="190" height="490" rx="10" fill="#111827" stroke="#3b82f6" stroke-width="1.5"/>
+  <rect x="1190" y="80" width="190" height="36" rx="10" fill="#1e3a5f"/>
+  <text x="1285" y="103" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">FRONTEND UI</text>
+
+  <rect x="1205" y="128" width="160" height="72" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="1285" y="148" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Graph Canvas</text>
+  <text x="1285" y="163" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Sigma.js WebGL</text>
+  <text x="1285" y="177" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">60 FPS · 10K+ nodes</text>
+  <text x="1285" y="191" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">75% viewport</text>
+
+  <rect x="1205" y="214" width="160" height="72" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="1285" y="234" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Blast Radius View</text>
+  <text x="1285" y="249" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Inline on graph</text>
+  <text x="1285" y="263" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Red pulse + amber glow</text>
+  <text x="1285" y="277" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Severity rings expand</text>
+
+  <rect x="1205" y="300" width="160" height="72" rx="6" fill="#0f2a1a" stroke="#10b981" stroke-width="1"/>
+  <text x="1285" y="320" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">AI RCA Panel</text>
+  <text x="1285" y="335" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Streaming token display</text>
+  <text x="1285" y="349" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Evidence list (clickable)</text>
+  <text x="1285" y="363" fill="#10b981" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Slides in, stays on graph</text>
+
+  <rect x="1205" y="386" width="160" height="72" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="1285" y="406" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Incident Feed</text>
+  <text x="1285" y="421" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Realtime sidebar</text>
+  <text x="1285" y="435" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Supabase WS push</text>
+  <text x="1285" y="449" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">Camera moves to node</text>
+
+  <rect x="1205" y="472" width="160" height="88" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+  <text x="1285" y="492" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="12" font-weight="600" text-anchor="middle">Onboarding</text>
+  <text x="1285" y="507" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">4-step wizard</text>
+  <text x="1285" y="521" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">CloudFormation link</text>
+  <text x="1285" y="535" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">First-scan progress</text>
+  <text x="1285" y="549" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle" font-style="italic">&lt;5 min to first graph</text>
+
+  <!-- Bottom timing bar -->
+  <rect x="20" y="590" width="1360" height="36" rx="6" fill="#111827" stroke="#1f2937" stroke-width="1"/>
+  <text x="40" y="612" fill="#64748b" font-family="system-ui,sans-serif" font-size="11" font-weight="600">TIMING:</text>
+  <text x="120" y="612" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="11">Full scan cycle: 15 min</text>
+  <text x="310" y="612" fill="#10b981" font-family="system-ui,sans-serif" font-size="11">Event-driven update: &lt;30 sec</text>
+  <text x="530" y="612" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="11">Blast radius query: &lt;100ms</text>
+  <text x="740" y="612" fill="#c084fc" font-family="system-ui,sans-serif" font-size="11">AI RCA (end-to-end): &lt;8 sec</text>
+  <text x="940" y="612" fill="#ef4444" font-family="system-ui,sans-serif" font-size="11">First render (page load): &lt;2 sec</text>
+  <text x="1170" y="612" fill="#64748b" font-family="system-ui,sans-serif" font-size="11">Onboarding: &lt;5 min</text>
+
+  <!-- Stage labels at bottom -->
+  <text x="130" y="580" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">① AWS Sources</text>
+  <text x="420" y="580" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">② Scanner</text>
+  <text x="720" y="580" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">③ Storage</text>
+  <text x="1015" y="580" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">④ API + AI</text>
+  <text x="1285" y="580" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">⑤ UI</text>
+</svg>

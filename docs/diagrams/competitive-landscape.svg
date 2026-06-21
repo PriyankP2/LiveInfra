@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" width="1100" height="720" style="background:#0a0e1a">
+  <defs>
+    <pattern id="d7" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#1f2937" opacity="0.5"/></pattern>
+    <filter id="glow5"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow6"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <rect width="1100" height="720" fill="#0a0e1a"/>
+  <rect width="1100" height="720" fill="url(#d7)"/>
+
+  <!-- Title -->
+  <text x="550" y="36" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle">LiveInfra — Competitive Positioning</text>
+  <text x="550" y="56" fill="#64748b" font-family="system-ui,sans-serif" font-size="12" text-anchor="middle">Price vs. Intelligence · The gap no one owns at mid-market</text>
+
+  <!-- Chart area -->
+  <rect x="100" y="80" width="750" height="560" rx="4" fill="#0d1117"/>
+
+  <!-- Quadrant backgrounds -->
+  <rect x="100" y="80" width="375" height="280" fill="#10b981" fill-opacity="0.03"/>
+  <rect x="475" y="80" width="375" height="280" fill="#3b82f6" fill-opacity="0.05"/>
+  <rect x="100" y="360" width="375" height="280" fill="#374151" fill-opacity="0.05"/>
+  <rect x="475" y="360" width="375" height="280" fill="#ef4444" fill-opacity="0.04"/>
+
+  <!-- Quadrant labels (faint) -->
+  <text x="200" y="200" fill="#1f2937" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle" transform="rotate(-15,200,200)">Budget Blind</text>
+  <text x="650" y="175" fill="#1f2937" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle" transform="rotate(-15,650,175)">Enterprise Premium</text>
+  <text x="200" y="480" fill="#1f2937" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle" transform="rotate(-15,200,480)">Diagram Tools</text>
+  <text x="650" y="480" fill="#1f2937" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle" transform="rotate(-15,650,480)">THE GAP ★</text>
+
+  <!-- Axes -->
+  <!-- X axis: Price -->
+  <line x1="100" y1="640" x2="850" y2="640" stroke="#374151" stroke-width="2"/>
+  <line x1="850" y1="640" x2="844" y2="634" stroke="#374151" stroke-width="2"/>
+  <line x1="850" y1="640" x2="844" y2="646" stroke="#374151" stroke-width="2"/>
+  <text x="475" y="672" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="13" text-anchor="middle" font-weight="600">Price / Budget Accessibility →</text>
+  <text x="115" y="672" fill="#10b981" font-family="system-ui,sans-serif" font-size="11">Free / Open-source</text>
+  <text x="840" y="672" fill="#ef4444" font-family="system-ui,sans-serif" font-size="11" text-anchor="end">$150K+/yr Enterprise</text>
+
+  <!-- Y axis: Intelligence/Capability -->
+  <line x1="100" y1="640" x2="100" y2="80" stroke="#374151" stroke-width="2"/>
+  <line x1="100" y1="80" x2="94" y2="86" stroke="#374151" stroke-width="2"/>
+  <line x1="100" y1="80" x2="106" y2="86" stroke="#374151" stroke-width="2"/>
+  <text x="50" y="360" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="13" text-anchor="middle" font-weight="600" transform="rotate(-90,50,360)">Intelligence / AI-Native Capability →</text>
+  <text x="80" y="636" fill="#64748b" font-family="system-ui,sans-serif" font-size="11" text-anchor="end">Static</text>
+  <text x="80" y="96" fill="#10b981" font-family="system-ui,sans-serif" font-size="11" text-anchor="end">AI-Native</text>
+
+  <!-- Axis midlines (dashed) -->
+  <line x1="475" y1="80" x2="475" y2="640" stroke="#1f2937" stroke-width="1.5" stroke-dasharray="8,5"/>
+  <line x1="100" y1="360" x2="850" y2="360" stroke="#1f2937" stroke-width="1.5" stroke-dasharray="8,5"/>
+
+  <!-- ══ COMPETITORS ══ -->
+  <!-- CloudMapper - free, dead, static - low price, low intel -->
+  <circle cx="170" cy="560" r="22" fill="#1c1917" stroke="#78716c" stroke-width="1.5"/>
+  <text x="170" y="556" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Cloud</text>
+  <text x="170" y="568" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Mapper</text>
+  <text x="170" y="596" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Free · Abandoned</text>
+  <text x="170" y="608" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Zero AI</text>
+
+  <!-- Steampipe - free, SQL only -->
+  <circle cx="185" cy="490" r="22" fill="#1c1917" stroke="#78716c" stroke-width="1.5"/>
+  <text x="185" y="486" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Steam</text>
+  <text x="185" y="498" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">pipe</text>
+  <text x="185" y="526" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Free · SQL-only</text>
+  <text x="185" y="538" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">No visualization</text>
+
+  <!-- Backstage - free/OSS, catalog not infra -->
+  <circle cx="200" cy="290" r="22" fill="#1c1917" stroke="#64748b" stroke-width="1.5"/>
+  <text x="200" y="287" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Back</text>
+  <text x="200" y="299" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">stage</text>
+  <text x="200" y="327" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">OSS · Manual YAML</text>
+  <text x="200" y="339" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Drifts from reality</text>
+
+  <!-- Cloudcraft - ~$99/mo, diagram only -->
+  <circle cx="540" cy="570" r="26" fill="#1c1917" stroke="#64748b" stroke-width="1.5"/>
+  <text x="540" y="566" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Cloud</text>
+  <text x="540" y="578" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">craft</text>
+  <text x="540" y="608" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">$99/mo · Datadog</text>
+  <text x="540" y="620" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Diagram only · Zero AI</text>
+
+  <!-- Hava.io - $79/mo, static -->
+  <circle cx="620" cy="540" r="26" fill="#1c1917" stroke="#64748b" stroke-width="1.5"/>
+  <text x="620" y="537" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Hava.io</text>
+  <text x="620" y="568" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">$79/mo · No collab</text>
+  <text x="620" y="580" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">"Useless at 2am"</text>
+
+  <!-- Lucidscale - enterprise priced, diagram -->
+  <circle cx="720" cy="500" r="26" fill="#1c1917" stroke="#64748b" stroke-width="1.5"/>
+  <text x="720" y="497" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">Lucid</text>
+  <text x="720" y="509" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">scale</text>
+  <text x="720" y="539" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Enterprise priced</text>
+  <text x="720" y="551" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Diagram only</text>
+
+  <!-- AWS DevOps Agent - free (AWS native), reactive only -->
+  <circle cx="350" cy="200" r="26" fill="#1c1917" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="350" y="194" fill="#fde68a" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">AWS DevOps</text>
+  <text x="350" y="206" fill="#fde68a" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Agent</text>
+  <text x="350" y="234" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">AWS native · GA 2026</text>
+  <text x="350" y="246" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Black-box · No graph</text>
+
+  <!-- Datadog - high price, some AI -->
+  <circle cx="760" cy="270" r="30" fill="#1c1917" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="760" y="267" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="11" font-weight="600" text-anchor="middle">Datadog</text>
+  <text x="760" y="305" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">$15–23/host/mo</text>
+  <text x="760" y="317" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">AI covers only 4 RCA types</text>
+  <text x="760" y="329" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">No true dep graph</text>
+
+  <!-- New Relic -->
+  <circle cx="800" cy="180" r="28" fill="#1c1917" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="800" y="177" fill="#a5b4fc" font-family="system-ui,sans-serif" font-size="10" font-weight="600" text-anchor="middle">New Relic</text>
+  <text x="800" y="212" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">High price</text>
+  <text x="800" y="224" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Separate tabs</text>
+
+  <!-- Dynatrace - high price, high intelligence, requires agent -->
+  <circle cx="820" cy="108" r="34" fill="#1a0f30" stroke="#c084fc" stroke-width="2" filter="url(#glow6)"/>
+  <text x="820" y="104" fill="#d8b4fe" font-family="system-ui,sans-serif" font-size="12" font-weight="700" text-anchor="middle">Dynatrace</text>
+  <text x="820" y="120" fill="#c084fc" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">$150K+/yr</text>
+  <text x="820" y="148" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Agent required</text>
+  <text x="820" y="160" fill="#475569" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Black-box AI</text>
+  <text x="820" y="172" fill="#c084fc" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">Gartner #1</text>
+
+  <!-- ══ LIVEINFRA (THE GAP) ══ -->
+  <circle cx="600" cy="168" r="46" fill="#0f2a1a" stroke="#10b981" stroke-width="3" filter="url(#glow5)"/>
+  <text x="600" y="152" fill="#10b981" font-family="system-ui,sans-serif" font-size="15" font-weight="700" text-anchor="middle">LiveInfra</text>
+  <text x="600" y="170" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">$299–$899/mo</text>
+  <text x="600" y="186" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Graph-first AI RCA</text>
+  <!-- Target crosshair -->
+  <circle cx="600" cy="168" r="56" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+  <circle cx="600" cy="168" r="70" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="3,5" opacity="0.3"/>
+  <line x1="600" y1="96" x2="600" y2="118" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+  <line x1="600" y1="218" x2="600" y2="240" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+  <line x1="528" y1="168" x2="550" y2="168" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+  <line x1="650" y1="168" x2="672" y2="168" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- THE GAP callout box -->
+  <rect x="480" y="380" width="300" height="140" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="2" filter="url(#glow6)"/>
+  <text x="630" y="402" fill="#10b981" font-family="system-ui,sans-serif" font-size="12" font-weight="700" text-anchor="middle">★ THE GAP LIVEINFRA OWNS</text>
+  <text x="630" y="420" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" text-anchor="middle">Agentless · AWS-native</text>
+  <text x="630" y="436" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" text-anchor="middle">Mid-market priced ($299–$899/mo)</text>
+  <text x="630" y="452" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" text-anchor="middle">Graph IS the RCA interface</text>
+  <text x="630" y="468" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" text-anchor="middle">Transparent AI evidence</text>
+  <text x="630" y="488" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Dynatrace at $150K+ ↑↑↑ · Diagrams at $79–$99 ↓↓↓</text>
+  <text x="630" y="502" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">NOBODY serves this quadrant today</text>
+
+  <!-- Legend -->
+  <rect x="870" y="80" width="210" height="560" rx="10" fill="#111827" stroke="#1f2937" stroke-width="1.5"/>
+  <text x="975" y="106" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="0.5">KEY WEAKNESSES</text>
+
+  <text x="885" y="130" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">CLOUDCRAFT</text>
+  <text x="885" y="144" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Zero AI · Diagram tool</text>
+  <text x="885" y="158" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Acquired by Datadog</text>
+
+  <text x="885" y="180" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">HAVA.IO</text>
+  <text x="885" y="194" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">"Useless at 2am"</text>
+  <text x="885" y="208" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">No incident integration</text>
+
+  <text x="885" y="230" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">DATADOG</text>
+  <text x="885" y="244" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Watchdog: only 4 RCA types</text>
+  <text x="885" y="258" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Punishing pricing at scale</text>
+
+  <text x="885" y="280" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">DYNATRACE</text>
+  <text x="885" y="294" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">$150K+/yr · Agent required</text>
+  <text x="885" y="308" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Black-box AI · Lock-in</text>
+  <text x="885" y="322" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">90-min problem closure gap</text>
+
+  <text x="885" y="344" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">AWS DEVOPS AGENT</text>
+  <text x="885" y="358" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Reactive only · No graph</text>
+  <text x="885" y="372" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Black-box Bedrock model</text>
+  <text x="885" y="386" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">No customization path</text>
+
+  <text x="885" y="408" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" font-weight="600">BACKSTAGE</text>
+  <text x="885" y="422" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Manual YAML catalog</text>
+  <text x="885" y="436" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Drifts from reality</text>
+  <text x="885" y="450" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">No live AWS scanning</text>
+
+  <line x1="885" y1="468" x2="1065" y2="468" stroke="#1f2937" stroke-width="1"/>
+
+  <text x="975" y="490" fill="#10b981" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle">LIVEINFRA WINS ON</text>
+  <rect x="885" y="498" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="508" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">Agentless deployment</text>
+  <rect x="885" y="516" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="526" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">Graph = RCA interface</text>
+  <rect x="885" y="534" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="544" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">Transparent AI evidence</text>
+  <rect x="885" y="552" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="562" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">$299/mo accessible</text>
+  <rect x="885" y="570" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="580" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">Pre-incident blast radius</text>
+  <rect x="885" y="588" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="598" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">MIT open-source scanner</text>
+  <rect x="885" y="606" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="900" y="616" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="10">&lt;5 min onboarding</text>
+</svg>

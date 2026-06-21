@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" style="background:#0a0e1a">
+  <defs>
+    <marker id="a1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#3b82f6"/></marker>
+    <marker id="a2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#10b981"/></marker>
+    <marker id="a3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#f59e0b"/></marker>
+    <marker id="a4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#c084fc"/></marker>
+    <marker id="a5" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/></marker>
+    <pattern id="dots3" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#1f2937" opacity="0.5"/>
+    </pattern>
+    <filter id="glow1"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <rect width="1200" height="760" fill="#0a0e1a"/>
+  <rect width="1200" height="760" fill="url(#dots3)"/>
+
+  <!-- Title -->
+  <text x="600" y="36" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle">LiveInfra — Neo4j Graph Schema</text>
+  <text x="600" y="56" fill="#64748b" font-family="system-ui,sans-serif" font-size="12" text-anchor="middle">Node types, edge types, and key properties for the AWS dependency graph</text>
+
+  <!-- ══════════ CENTRAL HUB: Resource node ══════════ -->
+  <circle cx="600" cy="340" r="72" fill="#1e3a5f" stroke="#3b82f6" stroke-width="3" filter="url(#glow1)"/>
+  <text x="600" y="328" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="14" font-weight="700" text-anchor="middle">:Resource</text>
+  <text x="600" y="344" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">id: String (ARN)</text>
+  <text x="600" y="358" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">type: ResourceType</text>
+  <text x="600" y="372" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">status: health enum</text>
+  <text x="600" y="386" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">tags: Map</text>
+
+  <!-- ══════════ RESOURCE TYPE NODES (orbiting) ══════════ -->
+  <!-- EC2 -->
+  <circle cx="200" cy="200" r="55" fill="#111827" stroke="#f59e0b" stroke-width="2"/>
+  <text x="200" y="192" fill="#fde68a" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:EC2</text>
+  <text x="200" y="207" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">instanceType</text>
+  <text x="200" y="219" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">privateIp</text>
+  <text x="200" y="231" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">state</text>
+
+  <!-- RDS -->
+  <circle cx="200" cy="480" r="55" fill="#111827" stroke="#ef4444" stroke-width="2"/>
+  <text x="200" y="472" fill="#fca5a5" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:RDS</text>
+  <text x="200" y="487" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">engine</text>
+  <text x="200" y="499" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">instanceClass</text>
+  <text x="200" y="511" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">multiAZ</text>
+
+  <!-- Lambda -->
+  <circle cx="420" cy="130" r="55" fill="#111827" stroke="#10b981" stroke-width="2"/>
+  <text x="420" y="122" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:Lambda</text>
+  <text x="420" y="137" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">runtime</text>
+  <text x="420" y="149" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">handler</text>
+  <text x="420" y="161" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">memorySize</text>
+
+  <!-- ALB -->
+  <circle cx="780" cy="130" r="55" fill="#111827" stroke="#3b82f6" stroke-width="2"/>
+  <text x="780" y="122" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:ALB/NLB</text>
+  <text x="780" y="137" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">dnsName</text>
+  <text x="780" y="149" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">scheme (int/ext)</text>
+  <text x="780" y="161" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">type</text>
+
+  <!-- SQS -->
+  <circle cx="1000" cy="200" r="55" fill="#111827" stroke="#c084fc" stroke-width="2"/>
+  <text x="1000" y="192" fill="#e9d5ff" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:SQS</text>
+  <text x="1000" y="207" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">queueUrl</text>
+  <text x="1000" y="219" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">visibilityTimeout</text>
+  <text x="1000" y="231" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">dlqArn</text>
+
+  <!-- S3 -->
+  <circle cx="1000" cy="480" r="55" fill="#111827" stroke="#06b6d4" stroke-width="2"/>
+  <text x="1000" y="472" fill="#67e8f9" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:S3Bucket</text>
+  <text x="1000" y="487" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">bucketName</text>
+  <text x="1000" y="499" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">versioning</text>
+  <text x="1000" y="511" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">publicAccess</text>
+
+  <!-- VPC -->
+  <circle cx="420" cy="560" r="55" fill="#111827" stroke="#64748b" stroke-width="2"/>
+  <text x="420" y="552" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:VPC</text>
+  <text x="420" y="567" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">cidrBlock</text>
+  <text x="420" y="579" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">isDefault</text>
+  <text x="420" y="591" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">enableDnsHostnames</text>
+
+  <!-- SecurityGroup -->
+  <circle cx="780" cy="560" r="55" fill="#111827" stroke="#f97316" stroke-width="2"/>
+  <text x="780" y="552" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="13" font-weight="700" text-anchor="middle">:SecurityGroup</text>
+  <text x="780" y="567" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">groupId</text>
+  <text x="780" y="579" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">inboundRules[]</text>
+  <text x="780" y="591" fill="#78716c" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">outboundRules[]</text>
+
+  <!-- ══════════ EDGES ══════════ -->
+  <!-- DEPENDS_ON (blue, bidirectional possible) -->
+  <line x1="249" y1="218" x2="535" y2="303" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="320" y="244" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="372" y="260" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <line x1="249" y1="462" x2="535" y2="380" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="316" y="408" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="368" y="424" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <line x1="470" y1="165" x2="550" y2="278" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="472" y="198" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="524" y="214" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <line x1="730" y1="165" x2="655" y2="278" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="642" y="198" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="694" y="214" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <line x1="951" y1="218" x2="665" y2="303" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="762" y="244" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="814" y="260" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <line x1="951" y1="462" x2="665" y2="380" stroke="#3b82f6" stroke-width="2" marker-end="url(#a1)"/>
+  <rect x="756" y="408" width="105" height="24" rx="4" fill="#0a0e1a"/>
+  <text x="808" y="424" fill="#3b82f6" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">DEPENDS_ON</text>
+
+  <!-- MEMBER_OF (green) -->
+  <line x1="240" y1="243" x2="330" y2="508" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#a2)"/>
+  <rect x="218" y="365" width="88" height="22" rx="4" fill="#0a0e1a"/>
+  <text x="262" y="380" fill="#10b981" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">MEMBER_OF</text>
+
+  <!-- PART_OF (amber, to VPC) -->
+  <line x1="468" y1="507" x2="568" y2="412" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#a3)"/>
+  <rect x="470" y="445" width="76" height="22" rx="4" fill="#0a0e1a"/>
+  <text x="508" y="460" fill="#f59e0b" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">PART_OF</text>
+
+  <!-- MEMBER_OF SecurityGroup (orange) -->
+  <line x1="736" y1="508" x2="662" y2="412" stroke="#f97316" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#a3)"/>
+  <rect x="662" y="446" width="88" height="22" rx="4" fill="#0a0e1a"/>
+  <text x="706" y="461" fill="#f97316" font-family="monospace,sans-serif" font-size="10" text-anchor="middle" font-weight="600">MEMBER_OF</text>
+
+  <!-- ══════════ EDGE PROPERTIES LEGEND ══════════ -->
+  <rect x="30" y="640" width="530" height="100" rx="8" fill="#111827" stroke="#1f2937" stroke-width="1.5"/>
+  <text x="50" y="660" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" font-weight="700" letter-spacing="1">EDGE PROPERTIES</text>
+
+  <text x="50" y="680" fill="#3b82f6" font-family="monospace,sans-serif" font-size="11" font-weight="700">DEPENDS_ON</text>
+  <text x="175" y="680" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">{ edge_type, traffic_volume, last_flow_log, created_at }</text>
+  <text x="50" y="698" fill="#10b981" font-family="monospace,sans-serif" font-size="11" font-weight="700">MEMBER_OF</text>
+  <text x="175" y="698" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">{ since, rule_count }</text>
+  <text x="50" y="716" fill="#f59e0b" font-family="monospace,sans-serif" font-size="11" font-weight="700">PART_OF</text>
+  <text x="175" y="716" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">{ az, subnet_cidr }</text>
+  <text x="50" y="734" fill="#94a3b8" font-family="monospace,sans-serif" font-size="11" font-weight="700">DEPLOYED_IN</text>
+  <text x="175" y="734" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">{ subnet_id, az, private_ip }</text>
+
+  <!-- ══════════ WRITE RULE LEGEND ══════════ -->
+  <rect x="590" y="640" width="580" height="100" rx="8" fill="#111827" stroke="#1f2937" stroke-width="1.5"/>
+  <text x="610" y="660" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" font-weight="700" letter-spacing="1">WRITE RULES (critical)</text>
+
+  <rect x="616" y="668" width="8" height="8" rx="2" fill="#10b981"/>
+  <text x="634" y="678" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">MERGE not CREATE — idempotent, handles resource recreation</text>
+  <rect x="616" y="685" width="8" height="8" rx="2" fill="#ef4444"/>
+  <text x="634" y="695" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Neo4j stores ONLY current state — history goes to PostgreSQL</text>
+  <rect x="616" y="702" width="8" height="8" rx="2" fill="#f59e0b"/>
+  <text x="634" y="712" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Pruning job: remove nodes not seen in 2+ scan cycles</text>
+  <rect x="616" y="719" width="8" height="8" rx="2" fill="#3b82f6"/>
+  <text x="634" y="729" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Temporal versioning BANNED — causes node explosion (57K/day)</text>
+</svg>

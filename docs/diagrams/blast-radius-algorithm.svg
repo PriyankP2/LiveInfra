@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700" style="background:#0a0e1a">
+  <defs>
+    <marker id="ba1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#ef4444"/></marker>
+    <marker id="ba2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#f59e0b"/></marker>
+    <marker id="ba3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#eab308"/></marker>
+    <marker id="ba4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/></marker>
+    <marker id="ba5" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#10b981"/></marker>
+    <radialGradient id="failing-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#ef4444;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="ring1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="ring2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#eab308;stop-opacity:0.08"/>
+      <stop offset="100%" style="stop-color:#eab308;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="ring3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#94a3b8;stop-opacity:0.05"/>
+      <stop offset="100%" style="stop-color:#94a3b8;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="pulse"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glow2"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="d4" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#1f2937" opacity="0.4"/></pattern>
+  </defs>
+
+  <rect width="1200" height="700" fill="#0a0e1a"/>
+  <rect width="1200" height="700" fill="url(#d4)"/>
+
+  <!-- Title -->
+  <text x="600" y="36" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle">Blast-Radius Algorithm</text>
+  <text x="600" y="56" fill="#64748b" font-family="system-ui,sans-serif" font-size="12" text-anchor="middle">Graph traversal · Severity scoring · Visual propagation</text>
+
+  <!-- ══════════════ VISUAL BLAST RADIUS DIAGRAM (LEFT) ══════════════ -->
+  <!-- Blast rings -->
+  <circle cx="370" cy="360" r="240" fill="url(#ring3)" stroke="#374151" stroke-width="1" stroke-dasharray="6,4"/>
+  <circle cx="370" cy="360" r="170" fill="url(#ring2)" stroke="#78716c" stroke-width="1" stroke-dasharray="6,4"/>
+  <circle cx="370" cy="360" r="100" fill="url(#ring1)" stroke="#92400e" stroke-width="1" stroke-dasharray="6,4"/>
+  <circle cx="370" cy="360" r="40" fill="url(#failing-glow)"/>
+
+  <!-- Ring labels -->
+  <text x="370" y="226" fill="#374151" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Hop 3 · Informational</text>
+  <text x="370" y="298" fill="#78716c" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">Hop 2 · At Risk</text>
+  <text x="370" y="282" fill="#92400e" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle"></text>
+
+  <!-- FAILING NODE (center) -->
+  <circle cx="370" cy="360" r="34" fill="#7f1d1d" stroke="#ef4444" stroke-width="3" filter="url(#pulse)"/>
+  <text x="370" y="354" fill="#fca5a5" font-family="system-ui,sans-serif" font-size="11" font-weight="700" text-anchor="middle">RDS</text>
+  <text x="370" y="368" fill="#ef4444" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">FAILING</text>
+
+  <!-- HOP 1 nodes (Critical - red/orange) -->
+  <!-- API Server -->
+  <line x1="404" y1="360" x2="452" y2="290" stroke="#ef4444" stroke-width="2.5" marker-end="url(#ba1)"/>
+  <circle cx="470" cy="272" r="26" fill="#431407" stroke="#f97316" stroke-width="2" filter="url(#glow2)"/>
+  <text x="470" y="268" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">EC2</text>
+  <text x="470" y="280" fill="#f97316" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">API Svr</text>
+  <text x="470" y="304" fill="#ef4444" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle" font-weight="600">CRITICAL</text>
+  <text x="470" y="316" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">score: 0.93</text>
+
+  <!-- Lambda -->
+  <line x1="370" y1="326" x2="342" y2="258" stroke="#ef4444" stroke-width="2.5" marker-end="url(#ba1)"/>
+  <circle cx="330" cy="238" r="26" fill="#431407" stroke="#f97316" stroke-width="2" filter="url(#glow2)"/>
+  <text x="330" y="234" fill="#fed7aa" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">Lambda</text>
+  <text x="330" y="246" fill="#f97316" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">Worker</text>
+  <text x="330" y="270" fill="#ef4444" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle" font-weight="600">CRITICAL</text>
+  <text x="330" y="282" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">score: 0.85</text>
+
+  <!-- Cache -->
+  <line x1="336" y1="360" x2="256" y2="350" stroke="#f59e0b" stroke-width="2" marker-end="url(#ba2)"/>
+  <circle cx="234" cy="350" r="26" fill="#1c1400" stroke="#f59e0b" stroke-width="2" filter="url(#glow2)"/>
+  <text x="234" y="346" fill="#fde68a" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">ElastiC</text>
+  <text x="234" y="358" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">Cache</text>
+  <text x="234" y="382" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle" font-weight="600">DEGRADED</text>
+  <text x="234" y="394" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">score: 0.62</text>
+
+  <!-- HOP 2 nodes (Degraded - amber) -->
+  <!-- ALB -->
+  <line x1="495" y1="270" x2="540" y2="220" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,2" marker-end="url(#ba2)"/>
+  <circle cx="556" cy="202" r="22" fill="#1c1400" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="556" y="198" fill="#fde68a" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">ALB</text>
+  <text x="556" y="210" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">Gateway</text>
+  <text x="556" y="228" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle" font-weight="600">DEGRADED</text>
+  <text x="556" y="240" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">0.54</text>
+
+  <!-- SQS -->
+  <line x1="354" y1="213" x2="320" y2="160" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,2" marker-end="url(#ba2)"/>
+  <circle cx="306" cy="144" r="22" fill="#1c1400" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="306" y="140" fill="#fde68a" font-family="system-ui,sans-serif" font-size="9" font-weight="600" text-anchor="middle">SQS</text>
+  <text x="306" y="152" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">Queue</text>
+  <text x="306" y="170" fill="#f59e0b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle" font-weight="600">DEGRADED</text>
+  <text x="306" y="182" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">0.41</text>
+
+  <!-- HOP 3 nodes (At Risk / Informational - gray) -->
+  <!-- CloudFront -->
+  <line x1="576" y1="196" x2="620" y2="170" stroke="#374151" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#ba4)"/>
+  <circle cx="638" cy="158" r="20" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="638" y="154" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">CDN</text>
+  <text x="638" y="166" fill="#64748b" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">CF</text>
+  <text x="638" y="182" fill="#64748b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">AT RISK</text>
+  <text x="638" y="192" fill="#475569" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">0.21</text>
+
+  <!-- S3 -->
+  <line x1="330" y1="126" x2="320" y2="80" stroke="#374151" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#ba4)"/>
+  <circle cx="316" cy="64" r="20" fill="#111827" stroke="#374151" stroke-width="1.5"/>
+  <text x="316" y="60" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">S3</text>
+  <text x="316" y="72" fill="#64748b" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">Reports</text>
+  <text x="316" y="88" fill="#64748b" font-family="system-ui,sans-serif" font-size="9" text-anchor="middle">AT RISK</text>
+  <text x="316" y="98" fill="#475569" font-family="system-ui,sans-serif" font-size="8" text-anchor="middle">0.14</text>
+
+  <!-- Legend for rings -->
+  <rect x="30" y="500" width="220" height="140" rx="8" fill="#111827" stroke="#1f2937" stroke-width="1"/>
+  <text x="50" y="520" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" font-weight="700" letter-spacing="1">SEVERITY LEGEND</text>
+  <circle cx="58" cy="538" r="7" fill="#ef4444" filter="url(#glow2)"/>
+  <text x="74" y="542" fill="#fca5a5" font-family="system-ui,sans-serif" font-size="11">CRITICAL (≥0.70) · Hop 1</text>
+  <circle cx="58" cy="560" r="7" fill="#f59e0b"/>
+  <text x="74" y="564" fill="#fde68a" font-family="system-ui,sans-serif" font-size="11">DEGRADED (0.40–0.70) · Hop 2</text>
+  <circle cx="58" cy="582" r="7" fill="#eab308" fill-opacity="0.6"/>
+  <text x="74" y="586" fill="#fef08a" font-family="system-ui,sans-serif" font-size="11">AT RISK (0.10–0.40) · Hop 3</text>
+  <circle cx="58" cy="604" r="7" fill="#374151"/>
+  <text x="74" y="608" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">INFORMATIONAL (&lt;0.10)</text>
+  <circle cx="58" cy="626" r="7" fill="#10b981"/>
+  <text x="74" y="630" fill="#a7f3d0" font-family="system-ui,sans-serif" font-size="11">HEALTHY (not in blast radius)</text>
+
+  <!-- ══════════════ ALGORITHM STEPS (RIGHT) ══════════════ -->
+  <rect x="730" y="80" width="450" height="580" rx="10" fill="#111827" stroke="#1f2937" stroke-width="1.5"/>
+  <text x="955" y="108" fill="#f1f5f9" font-family="system-ui,sans-serif" font-size="14" font-weight="700" text-anchor="middle">Algorithm Steps</text>
+
+  <!-- Step 1 -->
+  <rect x="750" y="122" width="410" height="90" rx="6" fill="#1c1917" stroke="#f97316" stroke-width="1"/>
+  <text x="766" y="142" fill="#fb923c" font-family="system-ui,sans-serif" font-size="11" font-weight="700">① Identify Failing Node</text>
+  <text x="766" y="160" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">From CloudWatch alarm ARN or PagerDuty</text>
+  <text x="766" y="176" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">webhook — map to Neo4j node ID</text>
+  <text x="766" y="192" fill="#78716c" font-family="monospace,sans-serif" font-size="10">MATCH (n:Resource {id: $failing_arn})</text>
+
+  <!-- Step 2 -->
+  <rect x="750" y="226" width="410" height="90" rx="6" fill="#1c1917" stroke="#3b82f6" stroke-width="1"/>
+  <text x="766" y="246" fill="#60a5fa" font-family="system-ui,sans-serif" font-size="11" font-weight="700">② Graph Traversal (Cypher)</text>
+  <text x="766" y="264" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Variable-length reverse traversal</text>
+  <text x="766" y="282" fill="#78716c" font-family="monospace,sans-serif" font-size="10">MATCH (n)&lt;-[:DEPENDS_ON*1..10]-(d)</text>
+  <text x="766" y="298" fill="#78716c" font-family="monospace,sans-serif" font-size="10">RETURN d, length(path) as hops</text>
+  <text x="766" y="310" fill="#3b82f6" font-family="system-ui,sans-serif" font-size="10" font-style="italic">Runtime: &lt;100ms on 1,000-node graph</text>
+
+  <!-- Step 3 -->
+  <rect x="750" y="330" width="410" height="110" rx="6" fill="#1c1917" stroke="#f59e0b" stroke-width="1"/>
+  <text x="766" y="350" fill="#fbbf24" font-family="system-ui,sans-serif" font-size="11" font-weight="700">③ Severity Scoring Formula</text>
+  <text x="766" y="368" fill="#fde68a" font-family="monospace,sans-serif" font-size="11">score = (1.0 / hop_count)</text>
+  <text x="766" y="384" fill="#78716c" font-family="system-ui,sans-serif" font-size="10">    × resource_type_multiplier</text>
+  <text x="766" y="399" fill="#78716c" font-family="system-ui,sans-serif" font-size="10">    × traffic_volume_multiplier</text>
+  <text x="766" y="413" fill="#78716c" font-family="system-ui,sans-serif" font-size="10">    → clamp(0.0, 1.0)</text>
+
+  <!-- multiplier table -->
+  <text x="900" y="368" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">RDS ×3.0  |  ALB ×2.5</text>
+  <text x="900" y="384" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">EC2 ×2.0  |  Lambda ×1.5</text>
+  <text x="900" y="400" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">SQS ×1.2  |  S3 ×0.8</text>
+  <text x="900" y="416" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">p90 vol ×1.5  |  p95 ×2.0</text>
+
+  <!-- Step 4 -->
+  <rect x="750" y="454" width="410" height="90" rx="6" fill="#1c1917" stroke="#10b981" stroke-width="1"/>
+  <text x="766" y="474" fill="#6ee7b7" font-family="system-ui,sans-serif" font-size="11" font-weight="700">④ Classify &amp; Render</text>
+  <text x="766" y="492" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Return per-node: { id, score, class, hops }</text>
+  <text x="766" y="508" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Sigma.js updates node colors in-place</text>
+  <text x="766" y="524" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">No full re-render — only affected nodes updated</text>
+  <text x="766" y="538" fill="#10b981" font-family="system-ui,sans-serif" font-size="10" font-style="italic">Interactive: "what if this node also fails?" union</text>
+
+  <!-- Step 5 -->
+  <rect x="750" y="558" width="410" height="88" rx="6" fill="#1c1917" stroke="#c084fc" stroke-width="1"/>
+  <text x="766" y="578" fill="#d8b4fe" font-family="system-ui,sans-serif" font-size="11" font-weight="700">⑤ Multi-Alert Root Cause (Feature 5)</text>
+  <text x="766" y="596" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Multiple alerts → map each to graph node</text>
+  <text x="766" y="612" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Find Lowest Common Ancestor in DAG</text>
+  <text x="766" y="628" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Collapse N alerts → 1 root cause hypothesis</text>
+  <text x="766" y="642" fill="#c084fc" font-family="system-ui,sans-serif" font-size="10" font-style="italic">Reduces 12-alert storm to 1 investigation</text>
+
+  <!-- Cypher query highlight -->
+  <rect x="30" y="650" width="680" height="40" rx="6" fill="#0d1117" stroke="#374151" stroke-width="1"/>
+  <text x="50" y="672" fill="#64748b" font-family="system-ui,sans-serif" font-size="10" font-weight="600">BLAST RADIUS CYPHER:</text>
+  <text x="180" y="672" fill="#10b981" font-family="monospace,sans-serif" font-size="12">MATCH (source {id: $id})&lt;-[:DEPENDS_ON*1..10]-(downstream) RETURN downstream, length(path) as hops</text>
+</svg>
