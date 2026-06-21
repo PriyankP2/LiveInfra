@@ -34,8 +34,11 @@ See also: [diagrams/product-roadmap.svg](../diagrams/product-roadmap.svg)
 - [ ] Node rendering: type-specific colors, icons, size by connection degree
 - [ ] Edge rendering: DEPENDS_ON (blue solid), MEMBER_OF (green dashed), PART_OF (amber dashed)
 - [ ] Zoom/pan/select interactions
-- [ ] Search and filter (name, type, region, tag)
+- [ ] Tag-based app isolation filter: `tag:app=payment-service`, `tag:env=prod`, `tag:team=platform` with multi-filter stacking
+- [ ] Filter panel: resource type checkboxes, region, VPC, tag key/value pickers — graph scopes instantly (in-memory, no server round-trip)
+- [ ] Search bar (keyboard shortcut `/`): name, ARN substring, tag value — matching nodes highlight, others dim
 - [ ] Resource detail panel (slide-in overlay, graph stays visible)
+- [ ] "Ask about this resource" button on resource detail panel: single-turn graph-aware AI query anchored to selected node
 - [ ] Auto-refresh: 15-min poll, smooth node update without re-layout
 
 **Milestone 4 — Blast Radius (Days 39–46)**
@@ -80,6 +83,8 @@ See also: [diagrams/product-roadmap.svg](../diagrams/product-roadmap.svg)
 **Goal**: $10K MRR. ~14 Starter + 8 Growth customers.
 
 **Features**:
+- **Graph-aware conversational chatbot** — persistent chat panel, full multi-turn dialogue, context-aware of current graph view and active tag filter; first Phase 2 feature to build
+- **Saved views / named workspaces** — persist a tag filter combination as a named view ("Payment Service", "Data Pipeline"); shareable across team seats; chatbot defaults to active workspace scope
 - Multi-account support: up to 10 accounts per customer
 - Infrastructure DVR: graph snapshot diff viewer ("what changed in the last hour?")
 - Drift detection: alert when topology changes unexpectedly (resource deleted, new SG rule added)
@@ -92,6 +97,8 @@ See also: [diagrams/product-roadmap.svg](../diagrams/product-roadmap.svg)
 - Multi-account CloudTrail stitching
 
 **Technical additions**:
+- Chatbot API: free-form Claude claude-sonnet-4-6 call with graph summary as system context + conversation history from PostgreSQL `chat_history` table
+- Saved views: PostgreSQL `saved_views` table (`customer_id`, `name`, `filter_state JSONB`); tRPC endpoint to save/load/delete views
 - DuckDB integration for S3 Parquet diff queries (Infrastructure DVR)
 - Cross-account Neo4j namespace merging
 - Slack OAuth + Slack Block Kit message formatter

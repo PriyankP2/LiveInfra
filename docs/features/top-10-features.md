@@ -137,17 +137,50 @@ Sends to Claude claude-sonnet-4-6 with a structured prompt → streams back a ro
 
 ---
 
-## Feature 8: Graph Search and Filter
+## Feature 8: Tag-Based App Isolation Filter
 
-**Finding your RDS instance in a 500-node graph without this is miserable.**
+**The feature that makes one AWS account usable by multiple teams.** Without this, a 500-node graph for an org that has a payment service, a data pipeline, and a batch processing system all in the same account is unusable noise.
 
-**What it does**: Search bar (keyboard shortcut: `/`) searches by name, ARN substring, tag value. Matching nodes highlight instantly, non-matching nodes dim. Filter by resource type (checkboxes), region, AZ, VPC.
+**The real-world problem**: AWS accounts don't map 1:1 to applications. A single account at a mid-market company typically runs 3–8 separate applications or microservice clusters, each owned by a different team. Tags are the de-facto boundary: `app: payment-service`, `team: platform`, `env: production`. LiveInfra exposes this boundary as a first-class graph filter — not an afterthought search field.
 
-**Instant search**: Debounced 150ms. No server round-trip — search runs against the in-memory graph state in Zustand.
+**What it does**:
+- Filter panel (keyboard shortcut: `F`) opens as a slide-down panel above the graph canvas
+- **Tag key/value pickers**: autocompleted from tags actually present in the scanned account — no manual entry
+- **Multi-filter AND stacking**: `tag:env=prod` + `tag:app=checkout` shows only checkout's prod resources
+- **Resource type checkboxes**: "show me only the data tier" = check RDS + ElastiCache + S3
+- **Region and VPC scope**: isolate one network boundary at a time
+- Non-matching nodes are **hidden** (not dimmed) — the graph re-layouts to the filtered set so remaining nodes space out properly
+- **Active filter chip bar** below the topbar: each active filter is a chip, click to remove, "Clear all" button
 
-**Tag filtering**: Useful for "show me only production resources" (filter by `env: prod` tag), "show me only the data tier" (filter by `tier: database`), etc.
+**Why in-memory matters**: All filtering runs against the Zustand graph state — no server round-trip. The graph responds in 0ms to every filter change. An SRE under pressure doesn't wait for API calls to isolate their service.
 
-**Cluster by VPC**: Optional layout mode that groups resources by VPC — useful for multi-VPC accounts to understand network boundaries.
+**Real use cases**:
+- "Show me only the payment service" → `tag:app=payment-service` → 34 nodes from 500
+- "Show me only production databases" → `type:rds` + `tag:env=prod` → 6 RDS instances
+- "What does Team Alpha own in us-east-1?" → `tag:team=alpha` + `region:us-east-1`
+- "Show me everything except dev and staging" → `tag:env=prod` (one filter, instant)
+
+**Filter state**: Persists for the browser session. Saved named views ("Payment Service", "Data Pipeline") are Phase 2.
+
+---
+
+## Feature 8b: "Ask About This Resource" (Single-Turn AI)
+
+**The lightweight MVP version of the chatbot.** A single question, graph-aware, no conversation history. Ships in MVP as a button on the Resource Detail Panel.
+
+**What it does**: When you have a node selected and you click "Ask about this resource," a text input appears pre-populated with the context: node properties, direct neighbors, last 3 CloudTrail events. You can type any question — "why would this Lambda be cold-starting so often?" or "what would happen if this SQS queue backed up?" — and Claude returns a plain-English explanation.
+
+**How it differs from AI RCA**:
+- AI RCA: reactive (alert fires → structured evidence-based root cause), always triggered by an incident
+- Ask: proactive (you choose when), conversational question, no required structured output, exploratory
+
+**Context injected automatically** (same as chatbot, scoped to one node):
+- Node metadata (type, instance class, tags, region)
+- Direct upstream and downstream neighbors (names, types)
+- Last 3 CloudTrail events on this resource
+- Current blast radius score (if blast radius is active)
+
+**Not a conversation**: One question, one answer. No follow-up. The full conversational chatbot with memory and multi-turn dialogue is Phase 2.
 
 ---
 
@@ -206,3 +239,37 @@ Sends to Claude claude-sonnet-4-6 with a structured prompt → streams back a ro
 **Alert on scanner failure**: If scanner hasn't successfully completed a scan in >20 minutes, email the account owner. SREs cannot use the graph during an active outage if the graph is stale from a failed scan.
 
 **Why it's in the top 10**: A LiveInfra instance that appears healthy but has a silently-failed scanner is worse than no tool at all — it gives false confidence. Scanner health must be visible, proactive, and alarmed.
+
+---
+
+## Feature 11: Graph-Aware Conversational Chatbot (Phase 2)
+
+**The feature that shifts LiveInfra from incident tool to daily companion.** The AI RCA fires during incidents. The chatbot is for everything else — Monday morning planning, architecture reviews, understanding unfamiliar services, preparing for on-call.
+
+**What it does**: A persistent chat panel (slides in from the right, same overlay pattern as other panels) connected to the live graph state. Every message the AI sends is aware of: the current filter/view active on the graph, the selected node if any, and recent incident history.
+
+**How it differs from AI RCA**:
+
+| | AI RCA | Chatbot |
+|---|---|---|
+| Trigger | Alert webhook or manual "Run RCA" | User opens chat panel |
+| Mode | Structured JSON output (root_cause, evidence[], remediation[]) | Free-form conversation |
+| Context | One specific resource + 3-hop neighborhood | Full current graph view |
+| Latency target | <8 seconds | First token <1 second |
+| Use case | Active incident response | Planning, exploration, learning |
+| History | None (stateless per call) | Full conversation thread |
+
+**Graph-awareness means**: When you ask "which of my services is most vulnerable to an RDS failure?" the chatbot already has the current graph in context — it can traverse dependencies, calculate blast radius scores, and answer accurately. It is not a generic chatbot that doesn't know your infrastructure.
+
+**Example conversations**:
+- "Walk me through what would happen if us-east-1a went down right now" → traverses AZ placement edges, lists affected services by AZ
+- "Why does my blast radius keep showing Lambda-batch-processor as critical?" → inspects graph edges, explains the dependency chain
+- "My team is migrating prod-api-db from t3.large to t3.medium next week. What should I worry about?" → checks blast radius, recent CloudTrail history, connected Lambda connection patterns
+- "I'm new to this account — explain what the payment service architecture looks like" → summarizes nodes + edges within `tag:app=payment-service` filter
+- "What changed in the last 24 hours?" → queries CloudTrail temporal context, summarizes in plain English
+
+**Context window management**: The chatbot sends the current graph view (filtered nodes + edges, up to 200 nodes to stay within Claude's context budget), conversation history (last 10 turns), and the current incident feed. For large accounts, the active tag filter limits graph context to the relevant app.
+
+**Saved workspaces + chatbot**: When a user has a saved view ("Payment Service"), the chatbot defaults to that scope. Platform engineers can open the chatbot to the full graph. App teams open it to their workspace. The same AI, different lenses.
+
+**Implementation**: Same Claude claude-sonnet-4-6 API, same Supabase Realtime streaming. The difference is the prompt: chatbot uses free-form user messages + graph summary as system context, rather than the structured XML incident prompt used by AI RCA. Conversation history stored in PostgreSQL `chat_history` table per customer per session.

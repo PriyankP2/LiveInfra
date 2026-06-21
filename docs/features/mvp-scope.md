@@ -21,19 +21,35 @@ Target: 70 working days (~3.5 months at 2 hours/day). These are the only feature
 - Edge types: DEPENDS_ON, MEMBER_OF, PART_OF
 - Layout: force-directed (Graphology ForceAtlas2)
 - Zoom, pan, node selection
-- Search/filter by name, type, region, tag
 - Full-screen toggle
 - Auto-refresh every 15 minutes (debounced, no disruptive re-layout)
 
-### 3. Resource Detail Panel
+### 3. Tag-Based App Isolation Filter
+
+**The feature that makes one AWS account usable by multiple teams.** A single account can host a payment service, a data pipeline, and a batch processing system all tagged differently. Without isolation, the graph is an undifferentiated 500-node cloud.
+
+- Filter panel (keyboard shortcut: `F`) opens above the graph canvas — does not replace graph
+- **Tag filters**: `tag:app=payment-service`, `tag:env=prod`, `tag:team=platform` — any tag key/value pair on any AWS resource
+- **Multi-filter stacking**: combine filters with AND logic — e.g., `tag:env=prod` + `tag:team=data` shows only the data team's production resources
+- **Resource type filter**: checkboxes for EC2, RDS, Lambda, ALB, etc. — useful for "show me only the data tier"
+- **Region filter**: scope to one or more AWS regions
+- **VPC filter**: scope to one VPC — shows all resources in that network boundary
+- All filtering is **in-memory on Zustand graph state** — no server round-trip, instant result
+- Non-matching nodes are hidden (not dimmed) so the graph re-layouts to the filtered set
+- Filter chip bar below topbar shows active filters — click chip to remove
+- Clear all filters: single button restores full graph
+- Active filter state persists for the browser session (not saved as a view — that's Phase 2)
+
+### 4. Resource Detail Panel
 - Slides in from right when node is selected
 - Graph stays fully visible behind panel (panel overlays, does not push graph)
 - Shows: ARN, instance type/class, state, tags, region, AZ, creation time
 - Shows: direct dependencies (upstream + downstream, 1 hop only)
 - Shows: security group membership
+- **"Ask about this resource" button** — opens single-turn AI query pre-loaded with: node properties, direct neighbors, last 3 CloudTrail events. Returns plain-English explanation. Not a conversation — one question, one answer. Full chatbot is Phase 2.
 - Close button returns to graph
 
-### 4. Blast Radius Visualization
+### 5. Blast Radius Visualization
 - Click any node → blast radius overlay activates
 - Downstream nodes highlighted by severity color: red (critical), amber (degraded), yellow (at-risk), blue (monitoring)
 - Severity score label on each highlighted node
@@ -43,7 +59,7 @@ Target: 70 working days (~3.5 months at 2 hours/day). These are the only feature
 - Toggle on/off
 - Maximum 10 hops, minimum 1 hop
 
-### 5. AI RCA Panel
+### 6. AI RCA Panel
 - Triggered by: PagerDuty webhook, OpsGenie webhook, manual trigger from UI ("Run RCA" button on any node)
 - Slides in from right, overlaid on graph
 - Failing node highlighted with red pulse animation while analysis runs
@@ -54,7 +70,7 @@ Target: 70 working days (~3.5 months at 2 hours/day). These are the only feature
 - what_i_dont_know section rendered prominently with warning styling
 - RCA persisted to PostgreSQL (accessible in Incident History)
 
-### 6. Incident Feed
+### 7. Incident Feed
 - Real-time feed in sidebar (collapsible)
 - Shows: incoming alert webhooks + manual RCA triggers
 - Status: analyzing / complete / error
@@ -62,26 +78,26 @@ Target: 70 working days (~3.5 months at 2 hours/day). These are the only feature
 - Last 7 days of incidents visible
 - Filter by resource type, severity
 
-### 7. Authentication
+### 8. Authentication
 - Clerk: email/password + Google OAuth
 - MFA support (TOTP)
 - Single tenant per account (no team seats in MVP — 1 login)
 - Email verification required
 
-### 8. Basic Dashboard
+### 9. Basic Dashboard
 - Account summary: total resources scanned, last scan time, scanner health
 - Top 5 highest blast-radius resources (sorted by max downstream severity)
 - Recent incidents (last 24 hours)
 - Quick-access links to graph, incident feed
 
-### 9. Webhook Integration
+### 10. Webhook Integration
 - PagerDuty: V2 webhook listener
 - OpsGenie: Alert action webhook
 - CloudWatch Alarm: SNS → HTTPS endpoint
 - Shared webhook secret per customer (HMAC validation)
 - Webhook test button in settings
 
-### 10. Settings
+### 11. Settings
 - AWS account connection management (add, validate, disconnect)
 - Webhook endpoints (create, test, delete)
 - AI RCA usage meter (calls used / monthly limit)
@@ -96,6 +112,8 @@ These are good ideas. They are not in MVP.
 | Feature | Phase |
 |---|---|
 | Multiple AWS accounts per customer | Phase 2 |
+| Saved views / named workspaces (persist a tag filter as "Payment Service") | Phase 2 |
+| Graph-aware conversational chatbot (multi-turn, proactive exploration) | Phase 2 |
 | Slack / GitHub notifications | Phase 2 |
 | Infrastructure DVR (diff viewer) | Phase 2 |
 | Drift detection alerts | Phase 2 |
