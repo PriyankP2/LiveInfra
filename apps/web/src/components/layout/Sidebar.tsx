@@ -8,6 +8,7 @@ const NAV = [
   {
     href: '/dashboard',
     label: 'Graph',
+    exact: true,
     icon: (
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
         <circle cx="10" cy="10" r="2.5" />
@@ -23,21 +24,33 @@ const NAV = [
     ),
   },
   {
-    href: '/accounts',
+    href: '/dashboard/accounts',
     label: 'Accounts',
+    exact: false,
     icon: (
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
-        <rect x="2" y="5" width="16" height="12" rx="2" />
-        <path d="M6 5V4a2 2 0 014 0v1" />
-        <path d="M10 5V4a2 2 0 014 0v1" />
-        <circle cx="10" cy="11" r="2" />
-        <path d="M6 17c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+        <path d="M16 4H4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2z" />
+        <path d="M2 8h16" />
+        <circle cx="6" cy="12" r="1" fill="currentColor" stroke="none" />
+        <path d="M9 12h5" />
       </svg>
     ),
   },
   {
-    href: '/alerts',
+    href: '/dashboard/scans',
+    label: 'Scans',
+    exact: false,
+    icon: (
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+        <circle cx="10" cy="10" r="7.5" />
+        <path d="M10 6v4.5l3 1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard/alerts',
     label: 'Alerts',
+    exact: false,
     icon: (
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
         <path d="M10 2a6 6 0 016 6c0 3.5 1.5 5 2 6H2c.5-1 2-2.5 2-6a6 6 0 016-6z" />
@@ -46,8 +59,9 @@ const NAV = [
     ),
   },
   {
-    href: '/settings',
+    href: '/dashboard/settings',
     label: 'Settings',
+    exact: false,
     icon: (
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
         <circle cx="10" cy="10" r="2.5" />
@@ -64,16 +78,19 @@ export default function Sidebar() {
     <aside
       className="flex flex-col items-center py-3 shrink-0"
       style={{
-        width: '60px',
-        background: '#070a10',
+        width: '58px',
+        background: 'var(--surface-0)',
         borderRight: '1px solid var(--hairline)',
       }}
     >
       {/* Logo mark */}
       <div className="mb-6 mt-1">
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: 'var(--accent)', boxShadow: '0 0 12px rgba(59,130,246,0.4)' }}
+          className="w-8 h-8 rounded-xl flex items-center justify-center relative"
+          style={{
+            background: 'linear-gradient(135deg, #00c4b4 0%, #00a89b 100%)',
+            boxShadow: '0 0 14px rgba(0,196,180,0.35)',
+          }}
         >
           <svg viewBox="0 0 16 16" fill="white" className="w-4 h-4">
             <circle cx="8" cy="8" r="2.5" />
@@ -89,19 +106,19 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex flex-col items-center gap-1 flex-1">
-        {NAV.map(({ href, label, icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
+      {/* Nav */}
+      <nav className="flex flex-col items-center gap-0.5 flex-1">
+        {NAV.map(({ href, label, icon, exact }) => {
+          const active = exact ? pathname === href : (pathname === href || pathname.startsWith(href + '/'))
           return (
             <Link
               key={href}
               href={href}
               title={label}
-              className="relative w-10 h-10 flex items-center justify-center rounded-lg transition-all group"
+              className="relative w-10 h-10 flex items-center justify-center rounded-xl transition-all group"
               style={{
-                color: active ? 'var(--accent)' : 'var(--ink-subtle)',
-                background: active ? 'rgba(59,130,246,0.12)' : 'transparent',
+                color:      active ? 'var(--accent)' : 'var(--ink-subtle)',
+                background: active ? 'rgba(0,196,180,0.10)' : 'transparent',
               }}
               onMouseEnter={(e) => {
                 if (!active) {
@@ -118,8 +135,8 @@ export default function Sidebar() {
             >
               {active && (
                 <span
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
-                  style={{ background: 'var(--accent)' }}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r-full"
+                  style={{ width: '3px', height: '18px', background: 'var(--accent)' }}
                 />
               )}
               {icon}
@@ -128,15 +145,30 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User button */}
-      <div className="mt-auto mb-1">
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: 'w-8 h-8',
-            },
+      {/* Version badge */}
+      <div
+        className="mt-auto mb-2 flex flex-col items-center gap-2"
+        style={{ width: '100%' }}
+      >
+        <div
+          style={{
+            fontFamily:    'var(--font-mono)',
+            fontSize:      '8px',
+            color:         'var(--ink-ghost)',
+            letterSpacing: '0.04em',
+            textAlign:     'center',
+            lineHeight:    '1.4',
+            userSelect:    'none',
           }}
-        />
+          title="⌘K — Command palette"
+        >
+          ⌘K
+          <br />
+          v0.1.0
+        </div>
+
+        {/* User */}
+        <UserButton appearance={{ elements: { avatarBox: 'w-7 h-7' } }} />
       </div>
     </aside>
   )

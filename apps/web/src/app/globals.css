@@ -1,71 +1,108 @@
 @import "tailwindcss";
 
 :root {
-  /* Canvas / surface hierarchy */
-  --canvas: #080a0f;
-  --surface-1: #0d1117;
-  --surface-2: #121820;
-  --surface-3: #1a2231;
+  /* ── Canvas / surface hierarchy ───────────────────────────────────────────
+     Obsidian base with a fractional cool-green undertone.
+     This is NOT the same blue-gray used by Datadog/Grafana.
+  */
+  --canvas:    #05070a;
+  --surface-0: #07090d;   /* Sidebar chrome — distinct from canvas */
+  --surface-1: #0c1018;   /* Panel / card base */
+  --surface-2: #111929;   /* Elevated cards, hover states */
+  --surface-3: #182233;   /* Active/selected backgrounds */
+  --surface-4: #1f2d40;   /* Tooltips, popovers */
 
-  /* Borders */
-  --hairline: #1e2a3a;
-  --hairline-strong: #2a3d52;
+  /* ── Borders ──────────────────────────────────────────────────────────────*/
+  --hairline:        #162030;
+  --hairline-strong: #2a3d54;
 
-  /* Accent */
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-dim: rgba(59, 130, 246, 0.15);
+  /* ── Accent — Infrared Teal (our identity color, not Tailwind blue) ───────*/
+  --accent:         #00c4b4;
+  --accent-hover:   #00e5d4;
+  --accent-muted:   #00a89b;
+  --accent-dim:     rgba(0, 196, 180, 0.10);
+  --accent-glow:    rgba(0, 196, 180, 0.20);
 
-  /* Ink (text) */
-  --ink: #f1f5f9;
-  --ink-muted: #94a3b8;
-  --ink-subtle: #475569;
+  /* Blast radius / danger secondary */
+  --accent-secondary:     #ff5a4d;
+  --accent-secondary-dim: rgba(255, 90, 77, 0.12);
 
-  /* Status colours */
-  --status-critical: #ef4444;
-  --status-degraded: #f97316;
-  --status-at-risk: #eab308;
-  --status-healthy: #22c55e;
-  --status-unknown: #6b7280;
+  /* ── Text hierarchy — 4 distinct levels ─────────────────────────────────*/
+  --ink:        #e2e8f4;   /* Primary: headings, important values */
+  --ink-muted:  #8496b0;   /* Secondary: body text, metadata values */
+  --ink-subtle: #465c78;   /* Tertiary: timestamps, secondary labels */
+  --ink-ghost:  #2b3d52;   /* Quaternary: disabled, placeholder */
 
-  /* AWS resource-type node colours */
-  --node-ec2: #f59e0b;
-  --node-rds: #3b82f6;
-  --node-lambda: #a855f7;
-  --node-alb: #f97316;
-  --node-nlb: #f97316;
-  --node-sqs: #10b981;
-  --node-sns: #06b6d4;
-  --node-s3: #06b6d4;
-  --node-vpc: #475569;
-  --node-subnet: #334155;
-  --node-sg: #64748b;
-  --node-ecs: #6366f1;
-  --node-elasticache: #ec4899;
-  --node-generic: #64748b;
+  /* ── Status colors — distinct hue AND lightness for colorblind safety ────*/
+  --status-critical:  #f04438;
+  --status-degraded:  #f87c00;
+  --status-at-risk:   #f5c518;
+  --status-healthy:   #12b76a;
+  --status-resolving: #7c86ff;
+  --status-unknown:   #3d5068;
 
-  /* Typography */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Node colors — hue spread across full spectrum ───────────────────────
+     Rule: no two nodes share same hue family.
+     All at 60-70% perceptual lightness (pop on canvas, not identical).
+  */
+
+  /* Compute */
+  --node-ec2:           #f9a825;   /* Amber     0°  */
+  --node-lambda:        #c47aff;   /* Violet  275°  */
+  --node-ecs:           #7b8cff;   /* Periwinkle 240°*/
+  --node-stepfunctions: #b07aff;   /* Mid-purple 265°*/
+
+  /* Data stores */
+  --node-rds:           #4d9fff;   /* Cornflower 210°*/
+  --node-elasticache:   #ff6eb4;   /* Hot pink   330°*/
+  --node-s3:            #40c8e0;   /* Cyan       190°*/
+
+  /* Networking / ingress */
+  --node-alb:           #ff7d54;   /* Coral       15°*/
+  --node-nlb:           #ffab76;   /* Peach       25°*/
+  --node-apigateway:    #34d98e;   /* Spring green 155°*/
+  --node-cloudfront:    #56e0c8;   /* Teal-mint  170°*/
+
+  /* Messaging / events */
+  --node-sqs:           #3ecf8e;   /* Med green  155°*/
+  --node-sns:           #1cc0a0;   /* Teal-green 165°*/
+  --node-eventbridge:   #ffd166;   /* Golden-yellow 45°*/
+
+  /* Network infrastructure (structural — intentionally muted) */
+  --node-vpc:           #3d5068;
+  --node-subnet:        #2a3a4f;
+  --node-sg:            #1a2d3d;   /* Near-invisible connector dots */
+  --node-generic:       #3d5068;
+
+  /* ── Typography ──────────────────────────────────────────────────────────*/
+  --font-display: var(--font-space-grotesk, 'Space Grotesk'), var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans:    var(--font-geist-sans), 'Inter', system-ui, sans-serif;
+  --font-mono:    var(--font-geist-mono), 'JetBrains Mono', monospace;
+
+  /* ── Elevation shadows ───────────────────────────────────────────────────*/
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.45);
+  --shadow-md:    0 4px 12px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.35);
+  --shadow-lg:    0 12px 32px rgba(0,0,0,0.65), 0 4px 8px rgba(0,0,0,0.4);
+  --shadow-panel: 4px 0 24px rgba(0,0,0,0.4);
 }
 
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-hairline: var(--hairline);
+  --color-canvas:          var(--canvas);
+  --color-surface-1:       var(--surface-1);
+  --color-surface-2:       var(--surface-2);
+  --color-surface-3:       var(--surface-3);
+  --color-hairline:        var(--hairline);
   --color-hairline-strong: var(--hairline-strong);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-subtle: var(--ink-subtle);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent:          var(--accent);
+  --color-accent-hover:    var(--accent-hover);
+  --color-ink:             var(--ink);
+  --color-ink-muted:       var(--ink-muted);
+  --color-ink-subtle:      var(--ink-subtle);
+  --font-sans:             var(--font-geist-sans);
+  --font-mono:             var(--font-geist-mono);
 }
 
-/* Force dark mode always — no light-mode override */
+/* Force dark only — no light-mode override */
 html {
   color-scheme: dark;
 }
@@ -73,7 +110,7 @@ html {
 body {
   background: var(--canvas);
   color: var(--ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -82,18 +119,50 @@ body {
   box-sizing: border-box;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Slim scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-subtle); }
+
+/* Canvas vignette — sits above WebGL (z:2) but below UI controls (z:10) */
+.graph-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(
+    ellipse 65% 55% at 50% 50%,
+    rgba(0, 196, 180, 0.025) 0%,
+    transparent 68%
+  );
 }
-::-webkit-scrollbar-track {
-  background: var(--surface-1);
+
+/* Scanning pulse animation for Re-scan button */
+@keyframes scan-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
-::-webkit-scrollbar-thumb {
-  background: var(--hairline-strong);
-  border-radius: 3px;
+
+/* Sync dot pulse */
+@keyframes sync-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(18, 183, 106, 0.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(18, 183, 106, 0); }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-subtle);
+
+/* Generic pulse for skeleton loaders */
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.3; }
+}
+
+/* Spin for loading spinners */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Command palette / modal fade-in */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }

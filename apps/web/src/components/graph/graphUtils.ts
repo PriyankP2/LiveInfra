@@ -2,40 +2,53 @@ import Graph from 'graphology'
 import type { ResourceType, EdgeType, GraphData } from '@liveinfra/shared'
 
 // ── Node colour ───────────────────────────────────────────────────────────────
+// Each type occupies a distinct hue sector so nodes are distinguishable
+// even at 3-6px size on a near-black canvas.
 
 export function nodeColor(type: ResourceType): string {
   const map: Record<ResourceType, string> = {
-    EC2:           '#f59e0b',
-    RDS:           '#3b82f6',
-    Lambda:        '#a855f7',
-    ALB:           '#f97316',
-    NLB:           '#fb923c',
-    SQS:           '#10b981',
-    SNS:           '#06b6d4',
-    S3Bucket:      '#38bdf8',
-    VPC:           '#475569',
-    Subnet:        '#334155',
-    SecurityGroup: '#1e3a4a',
-    ECS:           '#6366f1',
-    ElastiCache:   '#ec4899',
-    EventBridge:   '#fbbf24',
-    StepFunctions: '#a78bfa',
-    APIGateway:    '#34d399',
-    CloudFront:    '#67e8f9',
+    // Compute — warm/violet spectrum
+    EC2:           '#f9a825',   // Amber
+    Lambda:        '#c47aff',   // Soft violet
+    ECS:           '#7b8cff',   // Periwinkle (distinct from lambda)
+    StepFunctions: '#b07aff',   // Mid-purple
+
+    // Data — blue/pink spectrum
+    RDS:           '#4d9fff',   // Cornflower blue
+    ElastiCache:   '#ff6eb4',   // Hot pink
+    S3Bucket:      '#40c8e0',   // Cyan
+
+    // Networking — coral/green spectrum
+    ALB:           '#ff7d54',   // Coral-orange
+    NLB:           '#ffab76',   // Peach (lighter than ALB — same family, different tier)
+    APIGateway:    '#34d98e',   // Spring green
+    CloudFront:    '#56e0c8',   // Teal-mint
+
+    // Messaging — green/gold spectrum
+    SQS:           '#3ecf8e',   // Medium green
+    SNS:           '#1cc0a0',   // Teal-green
+    EventBridge:   '#ffd166',   // Golden-yellow
+
+    // Network infrastructure — intentionally muted (structural, not primary)
+    VPC:           '#3d5068',   // Muted slate
+    Subnet:        '#2a3a4f',   // Darker slate
+    SecurityGroup: '#1a2d3d',   // Near-canvas (connector dot only)
   }
-  return map[type] ?? '#64748b'
+  return map[type] ?? '#3d5068'
 }
 
 // ── Edge style ────────────────────────────────────────────────────────────────
+// Edges subordinate to nodes — muted colors, fine widths.
+// DEPENDS_ON is the most important (blast-radius path) so it's widest.
 
 export function edgeStyle(type: EdgeType): { color: string; size: number } {
   const styles: Record<EdgeType, { color: string; size: number }> = {
-    DEPENDS_ON:  { color: '#f97316', size: 2.5 }, // orange — traffic / dependency
-    MEMBER_OF:   { color: '#2563eb', size: 1 },   // blue  — security membership
-    PART_OF:     { color: '#1e293b', size: 0.5 }, // nearly invisible — structural only
-    DEPLOYED_IN: { color: '#16a34a', size: 1.5 }, // green — deployment location
+    DEPENDS_ON:  { color: '#b06a28', size: 1.8 },  // Amber-brown — traffic/dependency path
+    MEMBER_OF:   { color: '#2d5a8e', size: 1.0 },  // Muted blue — security membership
+    PART_OF:     { color: '#162030', size: 0.5 },  // Near-invisible — skip in graphology
+    DEPLOYED_IN: { color: '#1a6b45', size: 1.2 },  // Forest green — deployment location
   }
-  return styles[type] ?? { color: '#1e293b', size: 1 }
+  return styles[type] ?? { color: '#162030', size: 1 }
 }
 
 // ── Label helper: prefer Name tag, fall back to abbreviated resource ID ────────
@@ -44,9 +57,7 @@ function makeLabel(name: string, id: string): string {
   if (name && name !== id) {
     return name.length > 28 ? name.substring(0, 26) + '…' : name
   }
-  // ARN → extract resource-id portion after the last '/'
   const raw = id.startsWith('arn:') ? (id.split('/').pop() ?? id) : id
-  // Shorten long IDs: "sg-0abc12345678" → "sg-0abc…5678"
   return raw.length > 16 ? raw.substring(0, 8) + '…' + raw.slice(-4) : raw
 }
 
@@ -55,24 +66,40 @@ function makeLabel(name: string, id: string): string {
 type Tier = 'primary' | 'secondary' | 'connector'
 
 function nodeTier(type: ResourceType): Tier {
-  if (['EC2','RDS','Lambda','ALB','NLB','ECS','ElastiCache','APIGateway','S3Bucket','SQS','SNS','CloudFront','EventBridge','StepFunctions'].includes(type)) return 'primary'
-  if (['VPC'].includes(type)) return 'secondary'
+  const primary: ResourceType[] = [
+    'EC2', 'RDS', 'Lambda', 'ALB', 'NLB', 'ECS', 'ElastiCache',
+    'APIGateway', 'S3Bucket', 'SQS', 'SNS', 'CloudFront', 'EventBridge', 'StepFunctions',
+  ]
+  if (primary.includes(type)) return 'primary'
+  if (type === 'VPC') return 'secondary'
   return 'connector'  // SecurityGroup, Subnet
 }
 
 // ── Base node size by tier ────────────────────────────────────────────────────
 
 function baseNodeSize(type: ResourceType): number {
-  const tier = nodeTier(type)
-  if (tier === 'primary') {
-    const overrides: Partial<Record<ResourceType, number>> = {
-      RDS: 16, ALB: 15, NLB: 15, ECS: 14, EC2: 13,
-      Lambda: 12, ElastiCache: 12, APIGateway: 12,
-    }
-    return overrides[type] ?? 11
+  const overrides: Partial<Record<ResourceType, number>> = {
+    // Internet-facing resources are largest — if they die, everything behind them dies
+    ALB:           18,
+    NLB:           17,
+    RDS:           17,
+    ECS:           15,
+    EC2:           14,
+    ElastiCache:   13,
+    APIGateway:    13,
+    CloudFront:    12,
+    Lambda:        12,
+    S3Bucket:      11,
+    SQS:           10,
+    SNS:           10,
+    EventBridge:   10,
+    StepFunctions: 10,
+    // Structural
+    VPC:            7,
+    Subnet:         4,
+    SecurityGroup:  3,  // Connector dot — near-invisible at rest
   }
-  if (tier === 'secondary') return 7  // VPC — small anchor
-  return 3                            // SG, Subnet — tiny connectors
+  return overrides[type] ?? 10
 }
 
 // ── Convert GraphData → graphology Graph ──────────────────────────────────────
@@ -114,8 +141,7 @@ export function graphDataToGraphology(data: GraphData): Graph {
     if (!graph.hasNode(edge.source) || !graph.hasNode(edge.target)) continue
     if (graph.hasEdge(edge.source, edge.target)) continue
 
-    // Skip PART_OF edges entirely — they create sunburst patterns (SG→VPC, Subnet→VPC)
-    // without conveying meaningful dependency information for RCA.
+    // Skip PART_OF — creates sunburst explosion (SG→VPC, Subnet→VPC with 100+ spokes)
     if (edge.type === 'PART_OF') continue
 
     const style = edgeStyle(edge.type)
@@ -126,9 +152,7 @@ export function graphDataToGraphology(data: GraphData): Graph {
     })
   }
 
-  // Drop orphaned connector nodes (SGs/Subnets with no edges after PART_OF removal).
-  // They have no connections to anything meaningful — showing them as isolated dots
-  // is pure noise.
+  // Drop orphaned connector nodes (SGs/Subnets with no edges after PART_OF removal)
   const toRemove: string[] = []
   graph.forEachNode((nodeId, attrs) => {
     if (attrs['tier'] === 'connector' && graph.degree(nodeId) === 0) {
@@ -137,14 +161,13 @@ export function graphDataToGraphology(data: GraphData): Graph {
   })
   toRemove.forEach((id) => graph.dropNode(id))
 
-  // Degree-based size boost for primary nodes — hub resources grow proportionally.
-  // Capped so no single node dominates the canvas.
+  // Degree-based size boost for primary nodes — hub resources grow proportionally
   graph.forEachNode((nodeId, attrs) => {
     if (attrs['tier'] !== 'primary') return
     const degree = graph.degree(nodeId)
     if (degree === 0) return
     const base = Number(attrs['size']) || 10
-    const boost = Math.min(Math.log2(degree + 1) * 1.8, 7)
+    const boost = Math.min(Math.log2(degree + 1) * 1.8, 8)
     graph.setNodeAttribute(nodeId, 'size', Math.round((base + boost) * 10) / 10)
   })
 

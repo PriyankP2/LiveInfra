@@ -18,17 +18,21 @@ const envSchema = z.object({
   UPSTASH_REDIS_URL: z.string().url(),
   UPSTASH_REDIS_TOKEN: z.string().min(1),
 
-  // Anthropic
-  ANTHROPIC_API_KEY: z.string().min(1),
+  // Anthropic (required when AI RCA is enabled — Milestone 4)
+  ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
 
-  // Gemini
-  GEMINI_API_KEY: z.string().min(1),
+  // Gemini (fallback AI — optional until Milestone 4)
+  GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
   // Clerk
   CLERK_SECRET_KEY: z.string().min(1),
   CLERK_PUBLISHABLE_KEY: z.string().min(1),
+
+  // Default scan credentials (for demo / single-account setups)
+  SCAN_ROLE_ARN: z.string().optional(),
+  SCAN_EXTERNAL_ID: z.string().default('liveinfra'),
 })
 
 function parseEnv() {

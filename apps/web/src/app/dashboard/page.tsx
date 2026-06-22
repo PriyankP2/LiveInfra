@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import DashboardClient from './DashboardClient'
 
@@ -14,5 +14,17 @@ export default async function DashboardPage() {
     redirect('/sign-in')
   }
 
-  return <DashboardClient customerId="demo" accountId="975050024946" />
+  // Pass Clerk user ID to the client so it can resolve the customer UUID.
+  // The "demo" customerId is kept as a fallback for existing seeded Neo4j data.
+  const user = await currentUser()
+  const email = user?.emailAddresses[0]?.emailAddress
+
+  return (
+    <DashboardClient
+      clerkUserId={userId}
+      email={email}
+      // Legacy hardcoded account for the demo seed data
+      defaultAccountId="975050024946"
+    />
+  )
 }

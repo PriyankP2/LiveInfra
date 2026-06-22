@@ -1,19 +1,25 @@
 import { create } from 'zustand'
+import type { GraphNode } from '@liveinfra/shared'
 
 interface GraphStore {
   selectedNodeId: string | null
   hoveredNodeId: string | null
   searchQuery: string
   blastRadiusNodeId: string | null
+  blastRadiusAffectedIds: string[]   // node IDs within blast radius (for canvas highlighting)
   hiddenTypes: string[]
-  activeRegions: string[]        // only these regions are shown; empty = none selected
+  activeRegions: string[]            // only these regions are shown; empty = none selected
+  // Cached graph nodes for command palette search — synced by DashboardClient
+  cachedNodes: GraphNode[]
   setSelectedNode: (id: string | null) => void
   setHoveredNode: (id: string | null) => void
   setSearchQuery: (q: string) => void
   setBlastRadiusNode: (id: string | null) => void
+  setBlastRadiusAffected: (ids: string[]) => void
   toggleType: (type: string) => void
   toggleRegion: (region: string) => void
   setActiveRegions: (regions: string[]) => void
+  setCachedNodes: (nodes: GraphNode[]) => void
 }
 
 export const useGraphStore = create<GraphStore>((set) => ({
@@ -21,12 +27,15 @@ export const useGraphStore = create<GraphStore>((set) => ({
   hoveredNodeId: null,
   searchQuery: '',
   blastRadiusNodeId: null,
+  blastRadiusAffectedIds: [],
   hiddenTypes: [],
   activeRegions: [],
+  cachedNodes: [],
   setSelectedNode: (id) => set({ selectedNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
   setBlastRadiusNode: (id) => set({ blastRadiusNodeId: id }),
+  setBlastRadiusAffected: (ids) => set({ blastRadiusAffectedIds: ids }),
   toggleType: (type) =>
     set((s) => ({
       hiddenTypes: s.hiddenTypes.includes(type)
@@ -40,4 +49,5 @@ export const useGraphStore = create<GraphStore>((set) => ({
         : [...s.activeRegions, region],
     })),
   setActiveRegions: (regions) => set({ activeRegions: regions }),
+  setCachedNodes: (nodes) => set({ cachedNodes: nodes }),
 }))
