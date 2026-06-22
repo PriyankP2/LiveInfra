@@ -35,7 +35,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
     hoveredNodeId,
     searchQuery,
     hiddenTypes,
-    hiddenRegions,
+    activeRegions,
     setSelectedNode,
     setHoveredNode,
     setSearchQuery,
@@ -52,12 +52,12 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   const hoveredNodeIdRef = useRef(hoveredNodeId)
   const searchQueryRef = useRef(searchQuery)
   const hiddenTypesRef = useRef(hiddenTypes)
-  const hiddenRegionsRef = useRef(hiddenRegions)
+  const activeRegionsRef = useRef(activeRegions)
   selectedNodeIdRef.current = selectedNodeId
   hoveredNodeIdRef.current = hoveredNodeId
   searchQueryRef.current = searchQuery
   hiddenTypesRef.current = hiddenTypes
-  hiddenRegionsRef.current = hiddenRegions
+  activeRegionsRef.current = activeRegions
 
   const killRenderer = useCallback(() => {
     if (rendererRef.current) {
@@ -128,13 +128,15 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
             const rRegion = String(attrs['region'] ?? '')
             const matchesSearch = query.length === 0 || label.toLowerCase().includes(query.toLowerCase())
             const isHiddenType = hidden.length > 0 && hidden.includes(rType)
-            const isHiddenRegion = hiddenRegionsRef.current.length > 0 && hiddenRegionsRef.current.includes(rRegion)
+            // hide node if its region is not in the active set (empty active = show nothing)
+            const active = activeRegionsRef.current
+            const isInactiveRegion = active.length === 0 || !active.includes(rRegion)
 
             return {
               ...attrs,
               size: isSelected ? (Number(attrs['size']) || 10) * 1.4 : Number(attrs['size']) || 10,
               highlighted: isSelected || isHovered,
-              hidden: isHiddenType || isHiddenRegion || (query.length > 0 && !matchesSearch),
+              hidden: isInactiveRegion || isHiddenType || (query.length > 0 && !matchesSearch),
               color: isSelected
                 ? '#60a5fa'
                 : isHovered
@@ -177,7 +179,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
         ;(rendererRef.current as any).refresh()
       } catch { /* renderer may have been killed */ }
     }
-  }, [selectedNodeId, hoveredNodeId, searchQuery, hiddenTypes, hiddenRegions])
+  }, [selectedNodeId, hoveredNodeId, searchQuery, hiddenTypes, activeRegions])
 
   // ── Camera controls ──────────────────────────────────────────────────────────
 
@@ -244,6 +246,30 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   // ── Main canvas ──────────────────────────────────────────────────────────────
   return (
     <div className="flex-1 relative" style={{ background: 'var(--canvas)' }}>
+      {/* No region selected overlay */}
+      {activeRegions.length === 0 && data && data.meta.nodeCount > 0 && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center"
+          style={{ background: 'rgba(8,10,15,0.75)', backdropFilter: 'blur(4px)' }}
+        >
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--surface-2)', border: '1px solid var(--hairline)' }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--ink-subtle)' }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--ink)' }}>No region selected</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--ink-muted)' }}>
+                Use the region picker above to choose which AWS region to explore
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Sigma WebGL container */}
       <div ref={containerRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
 

@@ -6,14 +6,14 @@ interface GraphStore {
   searchQuery: string
   blastRadiusNodeId: string | null
   hiddenTypes: string[]
-  hiddenRegions: string[]
+  activeRegions: string[]        // only these regions are shown; empty = none selected
   setSelectedNode: (id: string | null) => void
   setHoveredNode: (id: string | null) => void
   setSearchQuery: (q: string) => void
   setBlastRadiusNode: (id: string | null) => void
   toggleType: (type: string) => void
   toggleRegion: (region: string) => void
-  setHiddenRegions: (regions: string[]) => void
+  setActiveRegions: (regions: string[]) => void
 }
 
 export const useGraphStore = create<GraphStore>((set) => ({
@@ -22,7 +22,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   searchQuery: '',
   blastRadiusNodeId: null,
   hiddenTypes: [],
-  hiddenRegions: [],
+  activeRegions: [],
   setSelectedNode: (id) => set({ selectedNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
@@ -35,9 +35,9 @@ export const useGraphStore = create<GraphStore>((set) => ({
     })),
   toggleRegion: (region) =>
     set((s) => ({
-      hiddenRegions: s.hiddenRegions.includes(region)
-        ? s.hiddenRegions.filter((r) => r !== region)
-        : [...s.hiddenRegions, region],
+      activeRegions: s.activeRegions.includes(region)
+        ? s.activeRegions.filter((r) => r !== region)
+        : [...s.activeRegions, region],
     })),
-  setHiddenRegions: (regions) => set({ hiddenRegions: regions }),
+  setActiveRegions: (regions) => set({ activeRegions: regions }),
 }))

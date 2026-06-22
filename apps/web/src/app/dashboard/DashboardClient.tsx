@@ -13,7 +13,7 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ customerId, accountId }: DashboardClientProps) {
-  const { selectedNodeId, hiddenRegions, toggleRegion, setHiddenRegions } = useGraphStore()
+  const { selectedNodeId, activeRegions, toggleRegion, setActiveRegions } = useGraphStore()
 
   const { data: graphData, dataUpdatedAt } = trpc.graph.topology.useQuery(
     { customerId, accountId },
@@ -37,10 +37,9 @@ export default function DashboardClient({ customerId, accountId }: DashboardClie
     : null
 
   const visibleNodeCount = useMemo(() => {
-    if (!graphData) return 0
-    if (hiddenRegions.length === 0) return graphData.meta.nodeCount
-    return graphData.nodes.filter((n) => !hiddenRegions.includes(n.region)).length
-  }, [graphData, hiddenRegions])
+    if (!graphData || activeRegions.length === 0) return 0
+    return graphData.nodes.filter((n) => activeRegions.includes(n.region)).length
+  }, [graphData, activeRegions])
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -64,18 +63,16 @@ export default function DashboardClient({ customerId, accountId }: DashboardClie
           </span>
         </div>
 
-        {/* Separator */}
         <div className="w-px h-4 shrink-0" style={{ background: 'var(--hairline)' }} />
 
         {/* Region dropdown */}
         <RegionDropdown
           regions={regions}
-          hiddenRegions={hiddenRegions}
+          activeRegions={activeRegions}
           onToggle={toggleRegion}
-          onSetAll={setHiddenRegions}
+          onSetAll={setActiveRegions}
         />
 
-        {/* Last sync */}
         {lastSyncLabel && (
           <>
             <div className="w-px h-4 shrink-0" style={{ background: 'var(--hairline)' }} />
@@ -85,15 +82,17 @@ export default function DashboardClient({ customerId, accountId }: DashboardClie
           </>
         )}
 
-        {/* Right side — counts + re-scan */}
+        {/* Right side */}
         <div className="flex items-center gap-3 ml-auto">
           {graphData && (
             <span className="text-xs" style={{ color: 'var(--ink-subtle)' }}>
-              <span style={{ color: 'var(--ink)' }}>{visibleNodeCount}</span>
-              {hiddenRegions.length > 0 && (
-                <span> / {graphData.meta.nodeCount}</span>
-              )}{' '}
-              resources · <span style={{ color: 'var(--ink)' }}>{graphData.meta.edgeCount}</span> connections
+              {activeRegions.length === 0 ? (
+                <span>{graphData.meta.nodeCount} resources across {regions.length} regions</span>
+              ) : (
+                <>
+                  <span style={{ color: 'var(--ink)' }}>{visibleNodeCount}</span> resources
+                </>
+              )}
             </span>
           )}
           <button
