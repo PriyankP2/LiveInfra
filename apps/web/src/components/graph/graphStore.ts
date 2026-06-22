@@ -6,11 +6,14 @@ interface GraphStore {
   searchQuery: string
   blastRadiusNodeId: string | null
   hiddenTypes: string[]
+  hiddenRegions: string[]
   setSelectedNode: (id: string | null) => void
   setHoveredNode: (id: string | null) => void
   setSearchQuery: (q: string) => void
   setBlastRadiusNode: (id: string | null) => void
   toggleType: (type: string) => void
+  toggleRegion: (region: string) => void
+  setHiddenRegions: (regions: string[]) => void
 }
 
 export const useGraphStore = create<GraphStore>((set) => ({
@@ -19,6 +22,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   searchQuery: '',
   blastRadiusNodeId: null,
   hiddenTypes: [],
+  hiddenRegions: [],
   setSelectedNode: (id) => set({ selectedNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
@@ -29,4 +33,11 @@ export const useGraphStore = create<GraphStore>((set) => ({
         ? s.hiddenTypes.filter((t) => t !== type)
         : [...s.hiddenTypes, type],
     })),
+  toggleRegion: (region) =>
+    set((s) => ({
+      hiddenRegions: s.hiddenRegions.includes(region)
+        ? s.hiddenRegions.filter((r) => r !== region)
+        : [...s.hiddenRegions, region],
+    })),
+  setHiddenRegions: (regions) => set({ hiddenRegions: regions }),
 }))

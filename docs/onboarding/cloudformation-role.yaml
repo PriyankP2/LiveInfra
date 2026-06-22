@@ -56,7 +56,7 @@ Resources:
       RoleName: !Ref RoleName
       Description: >
         Read-only cross-account role for LiveInfra infrastructure scanning.
-        Grants List/Describe/Get permissions only — no write access.
+        Grants List/Describe/Get permissions only - no write access.
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -76,6 +76,7 @@ Resources:
               - Sid: LiveInfraReadOnly
                 Effect: Allow
                 Action:
+                  - ec2:DescribeRegions
                   - ec2:DescribeInstances
                   - ec2:DescribeVpcs
                   - ec2:DescribeSubnets

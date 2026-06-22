@@ -14,6 +14,12 @@ export async function writeGraphToNeo4j(graphData: GraphData): Promise<void> {
   // Neo4j's MERGE on a large UNWIND list is idempotent: it creates the node
   // if absent and updates properties if it already exists.
   if (nodes.length > 0) {
+    // Neo4j only stores primitives — serialize tags/properties as JSON strings
+    const serializedNodes = nodes.map((n) => ({
+      ...n,
+      tags: JSON.stringify(n.tags),
+      properties: JSON.stringify(n.properties),
+    }))
     await runQuery(
       `UNWIND $nodes AS n
        MERGE (r:Resource {id: n.id, customer_id: n.customerId})
@@ -26,7 +32,7 @@ export async function writeGraphToNeo4j(graphData: GraphData): Promise<void> {
          tags:       n.tags,
          properties: n.properties
        }`,
-      { nodes }
+      { nodes: serializedNodes }
     )
   }
 

@@ -35,6 +35,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
     hoveredNodeId,
     searchQuery,
     hiddenTypes,
+    hiddenRegions,
     setSelectedNode,
     setHoveredNode,
     setSearchQuery,
@@ -51,10 +52,12 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   const hoveredNodeIdRef = useRef(hoveredNodeId)
   const searchQueryRef = useRef(searchQuery)
   const hiddenTypesRef = useRef(hiddenTypes)
+  const hiddenRegionsRef = useRef(hiddenRegions)
   selectedNodeIdRef.current = selectedNodeId
   hoveredNodeIdRef.current = hoveredNodeId
   searchQueryRef.current = searchQuery
   hiddenTypesRef.current = hiddenTypes
+  hiddenRegionsRef.current = hiddenRegions
 
   const killRenderer = useCallback(() => {
     if (rendererRef.current) {
@@ -122,14 +125,16 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
             const hidden = hiddenTypesRef.current
             const label = String(attrs['label'] ?? '')
             const rType = String(attrs['resourceType'] ?? '')
+            const rRegion = String(attrs['region'] ?? '')
             const matchesSearch = query.length === 0 || label.toLowerCase().includes(query.toLowerCase())
             const isHiddenType = hidden.length > 0 && hidden.includes(rType)
+            const isHiddenRegion = hiddenRegionsRef.current.length > 0 && hiddenRegionsRef.current.includes(rRegion)
 
             return {
               ...attrs,
               size: isSelected ? (Number(attrs['size']) || 10) * 1.4 : Number(attrs['size']) || 10,
               highlighted: isSelected || isHovered,
-              hidden: isHiddenType || (query.length > 0 && !matchesSearch),
+              hidden: isHiddenType || isHiddenRegion || (query.length > 0 && !matchesSearch),
               color: isSelected
                 ? '#60a5fa'
                 : isHovered
@@ -172,7 +177,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
         ;(rendererRef.current as any).refresh()
       } catch { /* renderer may have been killed */ }
     }
-  }, [selectedNodeId, hoveredNodeId, searchQuery, hiddenTypes])
+  }, [selectedNodeId, hoveredNodeId, searchQuery, hiddenTypes, hiddenRegions])
 
   // ── Camera controls ──────────────────────────────────────────────────────────
 

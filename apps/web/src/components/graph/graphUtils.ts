@@ -89,10 +89,9 @@ export function graphDataToGraphology(data: GraphData): Graph {
       size: nodeSize(node.type),
       x,
       y,
-      // Carry through original data for the panel
       resourceType: node.type,
+      region: node.region,        // used by region filter in nodeReducer
       accountId: node.accountId,
-      region: node.region,
       customerId: node.customerId,
       lastSeen: node.lastSeen,
       tags: node.tags,

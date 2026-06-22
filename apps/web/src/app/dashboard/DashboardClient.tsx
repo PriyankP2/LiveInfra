@@ -2,8 +2,10 @@
 
 import GraphCanvas from '@/components/graph/GraphCanvas'
 import ResourcePanel from '@/components/graph/ResourcePanel'
+import RegionDropdown from '@/components/layout/RegionDropdown'
 import { useGraphStore } from '@/components/graph/graphStore'
 import { trpc } from '@/lib/trpc'
+import { useMemo } from 'react'
 
 interface DashboardClientProps {
   customerId: string
@@ -11,68 +13,92 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ customerId, accountId }: DashboardClientProps) {
-  const { selectedNodeId } = useGraphStore()
+  const { selectedNodeId, hiddenRegions, toggleRegion, setHiddenRegions } = useGraphStore()
 
   const { data: graphData, dataUpdatedAt } = trpc.graph.topology.useQuery(
     { customerId, accountId },
     { retry: 1, staleTime: 30_000 }
   )
 
+  // Derive distinct regions with per-region node counts
+  const regions = useMemo(() => {
+    if (!graphData) return []
+    const counts = new Map<string, number>()
+    for (const n of graphData.nodes) {
+      if (n.region) counts.set(n.region, (counts.get(n.region) ?? 0) + 1)
+    }
+    return Array.from(counts.entries())
+      .map(([name, nodeCount]) => ({ name, nodeCount }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [graphData])
+
   const lastSyncLabel = dataUpdatedAt
     ? new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null
+
+  const visibleNodeCount = useMemo(() => {
+    if (!graphData) return 0
+    if (hiddenRegions.length === 0) return graphData.meta.nodeCount
+    return graphData.nodes.filter((n) => !hiddenRegions.includes(n.region)).length
+  }, [graphData, hiddenRegions])
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Account context bar */}
       <div
-        className="flex items-center justify-between px-5 shrink-0"
+        className="flex items-center gap-3 px-5 shrink-0"
         style={{
           height: '44px',
           background: 'var(--surface-1)',
           borderBottom: '1px solid var(--hairline)',
         }}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ background: 'var(--status-healthy)' }}
-            />
-            <span className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
-              {accountId}
-            </span>
-          </div>
+        {/* Account identity */}
+        <div className="flex items-center gap-2 shrink-0">
           <span
-            className="text-xs px-2 py-0.5 rounded-full font-mono"
-            style={{
-              background: 'var(--surface-3)',
-              color: 'var(--ink-subtle)',
-              border: '1px solid var(--hairline)',
-            }}
-          >
-            us-east-1
+            className="w-2 h-2 rounded-full"
+            style={{ background: 'var(--status-healthy)', boxShadow: '0 0 5px var(--status-healthy)' }}
+          />
+          <span className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
+            {accountId}
           </span>
-          {lastSyncLabel && (
-            <span className="text-xs" style={{ color: 'var(--ink-subtle)' }}>
-              Last synced {lastSyncLabel}
-            </span>
-          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Separator */}
+        <div className="w-px h-4 shrink-0" style={{ background: 'var(--hairline)' }} />
+
+        {/* Region dropdown */}
+        <RegionDropdown
+          regions={regions}
+          hiddenRegions={hiddenRegions}
+          onToggle={toggleRegion}
+          onSetAll={setHiddenRegions}
+        />
+
+        {/* Last sync */}
+        {lastSyncLabel && (
+          <>
+            <div className="w-px h-4 shrink-0" style={{ background: 'var(--hairline)' }} />
+            <span className="text-xs shrink-0" style={{ color: 'var(--ink-subtle)' }}>
+              Synced {lastSyncLabel}
+            </span>
+          </>
+        )}
+
+        {/* Right side — counts + re-scan */}
+        <div className="flex items-center gap-3 ml-auto">
           {graphData && (
             <span className="text-xs" style={{ color: 'var(--ink-subtle)' }}>
-              {graphData.meta.nodeCount} resources · {graphData.meta.edgeCount} connections
+              <span style={{ color: 'var(--ink)' }}>{visibleNodeCount}</span>
+              {hiddenRegions.length > 0 && (
+                <span> / {graphData.meta.nodeCount}</span>
+              )}{' '}
+              resources · <span style={{ color: 'var(--ink)' }}>{graphData.meta.edgeCount}</span> connections
             </span>
           )}
           <button
-            className="text-xs px-3 py-1.5 rounded-md font-medium transition-all"
-            style={{
-              background: 'var(--accent)',
-              color: '#fff',
-              border: 'none',
-            }}
+            className="text-xs px-3 py-1.5 rounded-md font-medium shrink-0"
+            style={{ background: 'var(--accent)', color: '#fff' }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
           >
