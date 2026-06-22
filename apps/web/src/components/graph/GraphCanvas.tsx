@@ -100,8 +100,16 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
       if (graph.order > 1) {
         try {
           forceAtlas2.assign(graph, {
-            iterations: 200,
-            settings: { gravity: 1, scalingRatio: 3, barnesHutOptimize: graph.order > 80 },
+            iterations: graph.order > 300 ? 120 : graph.order > 100 ? 200 : 350,
+            settings: {
+              gravity: 2,
+              scalingRatio: 2,
+              strongGravityMode: true,  // logarithmic — outliers don't fly off
+              linLogMode: true,         // prevents hub nodes from dominating layout
+              barnesHutOptimize: true,
+              barnesHutTheta: 0.5,
+              slowDown: 8,
+            },
           })
         } catch (err) {
           console.error('[GraphCanvas] ForceAtlas2 failed:', err)
@@ -114,10 +122,12 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
           renderEdgeLabels: false,
           defaultEdgeColor: '#475569',
           defaultNodeColor: '#3b82f6',
-          labelColor: { color: '#94a3b8' },
-          labelSize: 12,
+          labelColor: { color: '#cbd5e1' },
+          labelSize: 11,
           labelWeight: '500',
-          labelRenderedSizeThreshold: 10,
+          labelDensity: 0.4,
+          labelGridCellSize: 150,
+          labelRenderedSizeThreshold: 12, // primary resources (≥12px) show labels; SG 3px dots never do
           nodeReducer: (nodeId: string, attrs: Record<string, unknown>) => {
             const isSelected = selectedNodeIdRef.current === nodeId
             const isHovered = hoveredNodeIdRef.current === nodeId
@@ -132,9 +142,13 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
             const active = activeRegionsRef.current
             const isInactiveRegion = active.length === 0 || !active.includes(rRegion)
 
+            // Visual tier: compute/data on top, network scaffolding below
+            const importantTypes = ['EC2','RDS','Lambda','ALB','NLB','ECS','ElastiCache','APIGateway','S3Bucket','SQS','SNS']
+            const isImportant = importantTypes.includes(rType)
+
             return {
               ...attrs,
-              size: isSelected ? (Number(attrs['size']) || 10) * 1.4 : Number(attrs['size']) || 10,
+              size: isSelected ? (Number(attrs['size']) || 10) * 1.5 : Number(attrs['size']) || 10,
               highlighted: isSelected || isHovered,
               hidden: isInactiveRegion || isHiddenType || (query.length > 0 && !matchesSearch),
               color: isSelected
@@ -142,7 +156,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
                 : isHovered
                   ? '#93c5fd'
                   : String(attrs['color'] ?? '#64748b'),
-              zIndex: isSelected ? 1 : 0,
+              zIndex: isSelected ? 3 : isHovered ? 2 : isImportant ? 1 : 0,
             }
           },
           edgeReducer: (_edgeId: string, attrs: Record<string, unknown>) => ({
@@ -389,21 +403,20 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
       <div
         className="absolute bottom-3 left-3 z-10 flex items-center gap-3 px-3 py-2 rounded-lg text-xs"
         style={{
-          background: 'rgba(13,17,23,0.85)',
+          background: 'rgba(8,10,15,0.88)',
           border: '1px solid var(--hairline)',
           backdropFilter: 'blur(8px)',
           color: 'var(--ink-muted)',
         }}
       >
         {[
-          { color: '#f97316', label: 'DEPENDS_ON' },
-          { color: '#3b82f6', label: 'MEMBER_OF' },
-          { color: '#22c55e', label: 'DEPLOYED_IN' },
-          { color: '#475569', label: 'PART_OF' },
+          { color: '#f97316', label: 'depends on',   dash: false },
+          { color: '#2563eb', label: 'member of',    dash: false },
+          { color: '#16a34a', label: 'deployed in',  dash: false },
         ].map(({ color, label }) => (
           <span key={label} className="flex items-center gap-1.5">
-            <span className="w-5 h-0.5 rounded-full" style={{ background: color }} />
-            {label}
+            <span className="w-5 h-px rounded-full" style={{ background: color, height: '2px' }} />
+            <span className="text-[10px] uppercase tracking-wide">{label}</span>
           </span>
         ))}
       </div>
