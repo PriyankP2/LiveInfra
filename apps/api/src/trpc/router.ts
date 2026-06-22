@@ -141,9 +141,14 @@ export const appRouter = router({
           hops: number
           trafficVolume: number
         }>(
+          // DEPENDS_ON: service-to-service deps (Lambda→RDS, EC2→RDS)
+          // PART_OF: SG/Subnet→VPC, resource→cluster
+          // DEPLOYED_IN: EC2/RDS/Lambda→Subnet or VPC
+          // All three must be included so infrastructure containers (VPC, Subnet, SG)
+          // correctly show blast radius over the resources inside them.
           `MATCH (source:Resource {id: $resourceId, customer_id: $customerId})
-           MATCH path = (source)<-[:DEPENDS_ON*1..${maxHops}]-(downstream:Resource {customer_id: $customerId})
-           WITH downstream, length(path) AS hops,
+           MATCH path = (source)<-[:DEPENDS_ON|PART_OF|DEPLOYED_IN*1..${maxHops}]-(downstream:Resource {customer_id: $customerId})
+           WITH DISTINCT downstream, min(length(path)) AS hops,
                 reduce(vol = 0.0, r IN relationships(path) | vol + coalesce(r.traffic_volume, 0)) AS trafficVolume
            RETURN downstream, hops, trafficVolume
            ORDER BY hops ASC`,

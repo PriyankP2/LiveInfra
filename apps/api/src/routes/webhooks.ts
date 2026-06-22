@@ -155,7 +155,7 @@ async function runAutoRca(params: {
       try {
         const blastRows = await runQuery<{ count: number }>(
           `MATCH (source:Resource {id: $resourceId, customer_id: $customerId})
-           OPTIONAL MATCH path = (source)<-[:DEPENDS_ON*1..6]-(downstream:Resource {customer_id: $customerId})
+           OPTIONAL MATCH path = (source)<-[:DEPENDS_ON|PART_OF|DEPLOYED_IN*1..6]-(downstream:Resource {customer_id: $customerId})
            RETURN count(DISTINCT downstream) AS count`,
           { resourceId: node.id, customerId }
         )
