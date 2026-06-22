@@ -5,6 +5,7 @@ import ResourcePanel from '@/components/graph/ResourcePanel'
 import RegionDropdown from '@/components/layout/RegionDropdown'
 import { useGraphStore } from '@/components/graph/graphStore'
 import { trpc } from '@/lib/trpc'
+import { supabase } from '@/lib/supabase'
 import { useMemo, useState, useEffect } from 'react'
 
 interface DashboardClientProps {
@@ -83,6 +84,32 @@ export default function DashboardClient({ clerkUserId, email, defaultAccountId }
       void utils.graph.topology.invalidate()
     }
   }, [scanning, scanStartedAt, scanStatus?.lastScanAt, utils])
+
+  // Real-time: refresh graph when a new graph_snapshot row is inserted for this customer.
+  // This means the scanner finished and Neo4j has been written — invalidate the tRPC cache.
+  useEffect(() => {
+    if (!resolvedId) return
+
+    const channel = supabase
+      .channel(`graph_snapshots:${resolvedId}`)
+      .on(
+        'postgres_changes',
+        {
+          event:  'INSERT',
+          schema: 'public',
+          table:  'graph_snapshots',
+          filter: `customer_id=eq.${resolvedId}`,
+        },
+        () => {
+          void utils.graph.topology.invalidate()
+          void utils.scanner.status.invalidate()
+          setScanning(false)
+        }
+      )
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [resolvedId, utils])
 
   const triggerScan = trpc.scanner.triggerDefault.useMutation({
     onSuccess: (res) => {

@@ -74,8 +74,8 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname()
 
-  // Hide sidebar on the public landing page
-  if (pathname === '/') return null
+  // Hide sidebar on the public landing page and onboarding flow
+  if (pathname === '/' || pathname?.startsWith('/onboarding')) return null
 
   return (
     <aside

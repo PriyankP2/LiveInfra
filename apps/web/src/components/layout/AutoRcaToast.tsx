@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { trpc } from '@/lib/trpc'
 import { useGraphStore } from '@/components/graph/graphStore'
+import { supabase } from '@/lib/supabase'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const trpcAny = trpc as any
@@ -191,44 +192,68 @@ function IncidentToast({ toast, onDismiss }: {
   )
 }
 
-// ── Container — polls incidents table, manages toast queue ────────────────────
+// ── Container — real-time incidents subscription + toast queue ─────────────────
 export default function AutoRcaToast() {
   const { resolvedCustomerId } = useGraphStore()
   const [toasts, setToasts]     = useState<Toast[]>([])
-  const lastSeenAt = useRef<string | null>(null)
+  const seenIds = useRef<Set<string>>(new Set())
 
+  // Bootstrap: load recent incidents once on mount so we don't miss anything
+  // that arrived before the real-time channel connected.
   const incidentsQuery = trpcAny?.incidents?.list?.useQuery?.(
-    {
-      customerId: resolvedCustomerId ?? '',
-      limit:      5,
-      ...(lastSeenAt.current ? { since: lastSeenAt.current } : {}),
-    },
-    {
-      enabled:         !!resolvedCustomerId,
-      refetchInterval: 30_000,
-      staleTime:       0,
-    }
+    { customerId: resolvedCustomerId ?? '', limit: 5 },
+    { enabled: !!resolvedCustomerId, staleTime: 0 }
   )
 
+  const addIncident = useCallback((incident: Incident) => {
+    if (seenIds.current.has(incident.id)) return
+    const tenMinAgo = new Date(Date.now() - 10 * 60_000).toISOString()
+    if (incident.triggeredAt < tenMinAgo) return
+    seenIds.current.add(incident.id)
+    setToasts(prev => [...[{ id: incident.id, incident }], ...prev].slice(0, 5))
+  }, [])
+
+  // Seed from the initial REST fetch (handles the page-load window)
   useEffect(() => {
     if (!incidentsQuery?.data) return
-    const incidents = incidentsQuery.data as Incident[]
-    if (incidents.length === 0) return
+    for (const inc of incidentsQuery.data as Incident[]) {
+      addIncident(inc)
+    }
+  }, [incidentsQuery?.data, addIncident])
 
-    // Only surface incidents from the last 10 minutes (avoid historical noise on first load)
-    const tenMinAgo = new Date(Date.now() - 10 * 60_000).toISOString()
-    const fresh = incidents.filter(i => i.triggeredAt > tenMinAgo)
-    if (fresh.length === 0) return
+  // Supabase real-time subscription — replaces the 30s polling interval
+  useEffect(() => {
+    if (!resolvedCustomerId) return
 
-    lastSeenAt.current = fresh[0]?.triggeredAt ?? null
-    setToasts(prev => {
-      const existingIds = new Set(prev.map(t => t.id))
-      const newToasts = fresh
-        .filter(i => !existingIds.has(i.id))
-        .map(i => ({ id: i.id, incident: i }))
-      return newToasts.length === 0 ? prev : [...newToasts, ...prev].slice(0, 5)
-    })
-  }, [incidentsQuery?.data])
+    const channel = supabase
+      .channel(`incidents:${resolvedCustomerId}`)
+      .on(
+        'postgres_changes',
+        {
+          event:  'INSERT',
+          schema: 'public',
+          table:  'incidents',
+          filter: `customer_id=eq.${resolvedCustomerId}`,
+        },
+        (payload) => {
+          const row = payload.new as Record<string, unknown>
+          const incident: Incident = {
+            id:          String(row['id'] ?? ''),
+            source:      String(row['source'] ?? ''),
+            title:       String(row['title'] ?? ''),
+            severity:    String(row['severity'] ?? 'low'),
+            status:      String(row['status'] ?? 'open'),
+            resourceArn: row['resource_arn'] ? String(row['resource_arn']) : null,
+            resourceId:  row['resource_id']  ? String(row['resource_id'])  : null,
+            triggeredAt: String(row['triggered_at'] ?? new Date().toISOString()),
+          }
+          addIncident(incident)
+        }
+      )
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [resolvedCustomerId, addIncident])
 
   const dismiss = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id))

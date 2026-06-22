@@ -84,21 +84,19 @@ function NavBar() {
 }
 
 function HeroGraphMock() {
-  // Nodes: [id, cx, cy, color, label, pulse]
-  const nodes: Array<{ id: string; cx: number; cy: number; color: string; label: string; pulse: boolean }> = [
-    { id: 'alb',    cx: 420, cy: 60,  color: '#ff7d54', label: 'ALB',    pulse: true  },
-    { id: 'ec2a',   cx: 220, cy: 155, color: '#f9a825', label: 'EC2',    pulse: false },
-    { id: 'ec2b',   cx: 620, cy: 155, color: '#f9a825', label: 'EC2',    pulse: true  },
-    { id: 'lambda', cx: 420, cy: 175, color: '#c47aff', label: 'Lambda', pulse: false },
-    { id: 'rds',    cx: 140, cy: 270, color: '#4d9fff', label: 'RDS',    pulse: false },
-    { id: 'cache',  cx: 340, cy: 275, color: '#ff6eb4', label: 'Cache',  pulse: false },
-    { id: 'sqs',    cx: 530, cy: 275, color: '#3ecf8e', label: 'SQS',    pulse: true  },
-    { id: 's3',     cx: 700, cy: 250, color: '#40c8e0', label: 'S3',     pulse: false },
-    { id: 'rds2',   cx: 220, cy: 310, color: '#4d9fff', label: 'RDS',    pulse: false },
-    { id: 'step',   cx: 620, cy: 310, color: '#b07aff', label: 'Step',   pulse: false },
+  const nodes: Array<{ id: string; cx: number; cy: number; color: string; label: string; pulse: boolean; delay: number }> = [
+    { id: 'alb',    cx: 420, cy: 60,  color: '#ff7d54', label: 'ALB',    pulse: true,  delay: 0    },
+    { id: 'ec2a',   cx: 220, cy: 155, color: '#f9a825', label: 'EC2',    pulse: false, delay: 0.4  },
+    { id: 'ec2b',   cx: 620, cy: 155, color: '#f9a825', label: 'EC2',    pulse: true,  delay: 0.8  },
+    { id: 'lambda', cx: 420, cy: 175, color: '#c47aff', label: 'Lambda', pulse: false, delay: 1.2  },
+    { id: 'rds',    cx: 140, cy: 270, color: '#4d9fff', label: 'RDS',    pulse: false, delay: 1.6  },
+    { id: 'cache',  cx: 340, cy: 275, color: '#ff6eb4', label: 'Cache',  pulse: false, delay: 2.0  },
+    { id: 'sqs',    cx: 530, cy: 275, color: '#3ecf8e', label: 'SQS',    pulse: true,  delay: 2.4  },
+    { id: 's3',     cx: 700, cy: 250, color: '#40c8e0', label: 'S3',     pulse: false, delay: 2.8  },
+    { id: 'rds2',   cx: 220, cy: 310, color: '#4d9fff', label: 'RDS',    pulse: false, delay: 3.2  },
+    { id: 'step',   cx: 620, cy: 310, color: '#b07aff', label: 'Step',   pulse: false, delay: 3.6  },
   ]
 
-  // Edges: [from, to]
   const edges: Array<[string, string]> = [
     ['alb',    'ec2a'],
     ['alb',    'ec2b'],
@@ -116,119 +114,215 @@ function HeroGraphMock() {
 
   const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]))
 
+  // Blast radius highlight set — simulates a selected node + downstream
+  const blastIds = new Set(['alb', 'ec2b', 'sqs', 'step', 's3'])
+
   return (
-    <div
-      style={{
-        maxWidth: '840px',
-        margin: '64px auto 0',
-        borderRadius: '16px',
-        background: '#0c1018',
-        border: '1px solid #2a3d54',
-        boxShadow: '0 0 60px rgba(0,196,180,0.08), 0 32px 64px rgba(0,0,0,0.6)',
-        padding: '24px',
-        height: '360px',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-        <span
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '11px',
-            color: '#8496b0',
-            background: '#111929',
-            border: '1px solid #162030',
-            borderRadius: '6px',
-            padding: '3px 8px',
-          }}
-        >
-          975050024946
-        </span>
-        <span
-          style={{
-            fontFamily: 'system-ui, sans-serif',
-            fontSize: '11px',
-            color: '#465c78',
-            background: '#111929',
-            border: '1px solid #162030',
-            borderRadius: '6px',
-            padding: '3px 8px',
-          }}
-        >
-          47 resources · us-east-1
-        </span>
-        <span
-          style={{
-            marginLeft: 'auto',
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: '#12b76a',
-            boxShadow: '0 0 6px #12b76a',
-            display: 'inline-block',
-          }}
-        />
-        <span style={{ fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#12b76a' }}>
-          Live
-        </span>
-      </div>
+    <>
+      <style>{`
+        @keyframes hero-pulse {
+          0%, 100% { opacity: 0.15; r: 18; }
+          50%        { opacity: 0.4;  r: 26; }
+        }
+        @keyframes hero-node-appear {
+          from { opacity: 0; transform: scale(0.6); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes hero-edge-draw {
+          from { stroke-dashoffset: 300; opacity: 0; }
+          to   { stroke-dashoffset: 0;   opacity: 1; }
+        }
+        @keyframes hero-data-flow {
+          0%   { stroke-dashoffset: 24; }
+          100% { stroke-dashoffset: 0;  }
+        }
+        @keyframes hero-glow {
+          0%, 100% { filter: drop-shadow(0 0 4px currentColor); }
+          50%       { filter: drop-shadow(0 0 10px currentColor); }
+        }
+        @keyframes live-blink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.4; }
+        }
+      `}</style>
 
-      {/* SVG Graph */}
-      <svg
-        width="100%"
-        height="290"
-        viewBox="0 0 840 310"
-        style={{ overflow: 'visible' }}
-        aria-label="Mock AWS infrastructure dependency graph"
+      <div
+        style={{
+          maxWidth: '840px',
+          margin: '64px auto 0',
+          borderRadius: '16px',
+          background: '#0c1018',
+          border: '1px solid #2a3d54',
+          boxShadow: '0 0 80px rgba(0,196,180,0.12), 0 32px 64px rgba(0,0,0,0.6)',
+          padding: '24px',
+          height: '380px',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
       >
-        {/* Edges */}
-        {edges.map(([fromId, toId]) => {
-          const f = nodeMap[fromId]
-          const t = nodeMap[toId]
-          if (!f || !t) return null
-          return (
-            <line
-              key={`${fromId}-${toId}`}
-              x1={f.cx}
-              y1={f.cy}
-              x2={t.cx}
-              y2={t.cy}
-              stroke="#2a3d54"
-              strokeWidth="1.5"
-            />
-          )
-        })}
+        {/* Ambient center glow */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 60% 40% at 50% 55%, rgba(0,196,180,0.05) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
 
-        {/* Nodes */}
-        {nodes.map((node) => (
-          <g key={node.id} transform={`translate(${node.cx},${node.cy})`}>
-            {/* Pulse ring for "active" nodes */}
-            {node.pulse && (
-              <circle
-                r="20"
-                fill="none"
-                stroke={node.color}
-                strokeWidth="1"
-                opacity="0.25"
-              />
-            )}
-            {/* Node circle */}
-            <circle r="13" fill={node.color} opacity="0.9" />
-            {/* Label */}
-            <text
-              y="28"
-              textAnchor="middle"
-              fill="#8496b0"
-              fontSize="9"
-              fontFamily="monospace"
-            >
-              {node.label}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </div>
+        {/* Header row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', position: 'relative' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#8496b0', background: '#111929', border: '1px solid #162030', borderRadius: '6px', padding: '3px 8px' }}>
+            975050024946
+          </span>
+          <span style={{ fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#465c78', background: '#111929', border: '1px solid #162030', borderRadius: '6px', padding: '3px 8px' }}>
+            47 resources · us-east-1
+          </span>
+          <span style={{ fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#f04438', background: 'rgba(240,68,56,0.1)', border: '1px solid rgba(240,68,56,0.25)', borderRadius: '6px', padding: '3px 8px' }}>
+            Blast radius: 5 resources
+          </span>
+          <span style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: '#12b76a', boxShadow: '0 0 6px #12b76a', display: 'inline-block', animation: 'live-blink 2s ease-in-out infinite' }} />
+          <span style={{ fontFamily: 'system-ui, sans-serif', fontSize: '11px', color: '#12b76a' }}>Live</span>
+        </div>
+
+        {/* SVG Graph */}
+        <svg
+          width="100%"
+          height="305"
+          viewBox="0 0 840 310"
+          style={{ overflow: 'visible', position: 'relative' }}
+          aria-label="Animated AWS infrastructure dependency graph showing blast radius"
+        >
+          <defs>
+            {/* Glowing edge filter */}
+            <filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Edges — drawn with animation */}
+          {edges.map(([fromId, toId], i) => {
+            const f = nodeMap[fromId]
+            const t = nodeMap[toId]
+            if (!f || !t) return null
+            const inBlast = blastIds.has(fromId) && blastIds.has(toId)
+            return (
+              <g key={`${fromId}-${toId}`}>
+                {/* Base edge */}
+                <line
+                  x1={f.cx} y1={f.cy} x2={t.cx} y2={t.cy}
+                  stroke={inBlast ? '#f04438' : '#2a3d54'}
+                  strokeWidth={inBlast ? '1.5' : '1.2'}
+                  opacity={inBlast ? 0.6 : 0.8}
+                  strokeDasharray="300"
+                  strokeDashoffset="300"
+                  style={{
+                    animation: `hero-edge-draw 0.6s ease-out forwards`,
+                    animationDelay: `${0.2 + i * 0.08}s`,
+                    filter: inBlast ? 'url(#edge-glow)' : 'none',
+                  }}
+                />
+                {/* Animated data flow dots on active edges */}
+                {inBlast && (
+                  <line
+                    x1={f.cx} y1={f.cy} x2={t.cx} y2={t.cy}
+                    stroke="#f04438"
+                    strokeWidth="2"
+                    opacity="0.5"
+                    strokeDasharray="4 20"
+                    style={{ animation: 'hero-data-flow 1.4s linear infinite' }}
+                  />
+                )}
+              </g>
+            )
+          })}
+
+          {/* Nodes */}
+          {nodes.map((node) => {
+            const inBlast = blastIds.has(node.id)
+            return (
+              <g
+                key={node.id}
+                transform={`translate(${node.cx},${node.cy})`}
+                style={{
+                  animation: `hero-node-appear 0.4s ease-out forwards`,
+                  animationDelay: `${node.delay * 0.15}s`,
+                  opacity: 0,
+                  transformOrigin: `${node.cx}px ${node.cy}px`,
+                }}
+              >
+                {/* Blast radius halo */}
+                {inBlast && (
+                  <circle
+                    r="20"
+                    fill="rgba(240,68,56,0.06)"
+                    stroke="#f04438"
+                    strokeWidth="1"
+                    style={{ animation: 'hero-pulse 2s ease-in-out infinite', animationDelay: `${node.delay * 0.1}s` }}
+                  />
+                )}
+                {/* Pulse ring for active nodes (non-blast) */}
+                {node.pulse && !inBlast && (
+                  <circle
+                    r="20"
+                    fill="none"
+                    stroke={node.color}
+                    strokeWidth="1"
+                    style={{ animation: 'hero-pulse 2.5s ease-in-out infinite', animationDelay: `${node.delay * 0.2}s` }}
+                  />
+                )}
+                {/* Outer glow ring for blast nodes */}
+                {inBlast && (
+                  <circle r="14" fill="none" stroke="#f04438" strokeWidth="2" opacity="0.3" />
+                )}
+                {/* Node circle */}
+                <circle
+                  r="12"
+                  fill={inBlast ? '#f04438' : node.color}
+                  opacity={inBlast ? 0.92 : 0.88}
+                  style={inBlast ? { animation: 'hero-glow 2s ease-in-out infinite', color: '#f04438' } : {}}
+                />
+                {/* Label */}
+                <text y="26" textAnchor="middle" fill={inBlast ? '#f04438' : '#8496b0'} fontSize="9" fontFamily="monospace">
+                  {node.label}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+
+        {/* RCA panel hint — simulates a selected node panel */}
+        <div style={{
+          position: 'absolute', right: '16px', top: '64px', bottom: '16px',
+          width: '180px', background: '#0a0e15', border: '1px solid #1d2d42',
+          borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px',
+          opacity: 0.92,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff7d54', boxShadow: '0 0 5px #ff7d54' }} />
+            <span style={{ fontFamily: 'monospace', fontSize: '10px', color: '#8496b0' }}>ALB / prod-alb</span>
+          </div>
+          <div style={{ height: '1px', background: '#162030' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontFamily: 'system-ui', fontSize: '9px', color: '#465c78', textTransform: 'uppercase', letterSpacing: '0.06em' }}>AI RCA</span>
+            <span style={{ fontFamily: 'system-ui', fontSize: '10px', color: '#8496b0', lineHeight: 1.5 }}>
+              High connection error rate detected on target group…
+            </span>
+          </div>
+          <div style={{ height: '1px', background: '#162030' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            <span style={{ fontFamily: 'system-ui', fontSize: '9px', color: '#f04438', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Blast: 5 affected</span>
+            {['EC2 / web-01', 'SQS / orders', 'RDS / prod-db'].map((r) => (
+              <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#f04438', opacity: 0.7, flexShrink: 0 }} />
+                <span style={{ fontFamily: 'monospace', fontSize: '9px', color: '#465c78' }}>{r}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
 

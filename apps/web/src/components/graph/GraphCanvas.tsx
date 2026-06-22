@@ -447,12 +447,36 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   if (isLoading) {
     return (
       <div className="flex-1 relative flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-full border-2 animate-spin"
-            style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
-          />
-          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Loading infrastructure graph…</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <div className="flex flex-col items-center gap-4">
+          <div style={{ position: 'relative', width: '56px', height: '56px' }}>
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style={{ opacity: 0.15 }}>
+              <circle cx="28" cy="28" r="7" fill="var(--accent)" />
+              <circle cx="10" cy="10" r="4.5" fill="var(--accent)" />
+              <circle cx="46" cy="10" r="4.5" fill="var(--accent)" />
+              <circle cx="10" cy="46" r="4.5" fill="var(--accent)" />
+              <circle cx="46" cy="46" r="4.5" fill="var(--accent)" />
+              <line x1="14" y1="12" x2="21" y2="21" stroke="var(--accent)" strokeWidth="2" />
+              <line x1="42" y1="12" x2="35" y2="21" stroke="var(--accent)" strokeWidth="2" />
+              <line x1="14" y1="44" x2="21" y2="35" stroke="var(--accent)" strokeWidth="2" />
+              <line x1="42" y1="44" x2="35" y2="35" stroke="var(--accent)" strokeWidth="2" />
+            </svg>
+            <div
+              style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                border: '2px solid var(--accent)', borderTopColor: 'transparent',
+                animation: 'spin 0.9s linear infinite',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
+              Loading infrastructure graph
+            </p>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-muted)', fontFamily: 'var(--font-sans)' }}>
+              Fetching nodes and edges from Neo4j…
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -462,11 +486,32 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
     return (
       <div className="flex-1 flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
         <div
-          className="flex flex-col items-center gap-2 p-6 rounded-xl"
-          style={{ border: `1px solid ${('var(--status-critical)')}22`, background: 'var(--surface-1)' }}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+            padding: '36px', borderRadius: '16px', maxWidth: '320px', textAlign: 'center',
+            background: 'var(--surface-1)', border: '1px solid rgba(240,68,56,0.2)',
+            boxShadow: '0 0 40px rgba(240,68,56,0.06)',
+          }}
         >
-          <span className="text-lg" style={{ color: 'var(--status-critical)' }}>Failed to load graph</span>
-          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Could not reach API</p>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '14px',
+            background: 'rgba(240,68,56,0.1)', border: '1px solid rgba(240,68,56,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--status-critical)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
+              Graph failed to load
+            </p>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-muted)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+              Could not reach the API. Check that the backend is running and your network is connected.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -475,9 +520,66 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   if (data && data.meta.nodeCount === 0) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
-        <div className="flex flex-col items-center gap-3 text-center max-w-xs">
-          <p className="font-medium" style={{ color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>No infrastructure scanned yet</p>
-          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>Trigger a scan to populate the dependency graph.</p>
+        <div
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px',
+            padding: '48px 36px', borderRadius: '20px', maxWidth: '380px', textAlign: 'center',
+            background: 'var(--surface-1)', border: '1px solid var(--hairline-strong)',
+            boxShadow: '0 0 60px rgba(0,196,180,0.05)',
+          }}
+        >
+          {/* Animated placeholder graph */}
+          <div style={{ position: 'relative', width: '100px', height: '100px' }}>
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="46" fill="none" stroke="var(--hairline)" strokeWidth="1" strokeDasharray="4 6" />
+              <line x1="50" y1="50" x2="22" y2="22" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <line x1="50" y1="50" x2="78" y2="22" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <line x1="50" y1="50" x2="18" y2="66" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <line x1="50" y1="50" x2="82" y2="66" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <circle cx="50" cy="50" r="9" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="1.5" />
+              <circle cx="22" cy="22" r="5" fill="var(--surface-3)" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <circle cx="78" cy="22" r="5" fill="var(--surface-3)" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <circle cx="18" cy="66" r="5" fill="var(--surface-3)" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+              <circle cx="82" cy="66" r="5" fill="var(--surface-3)" stroke="var(--hairline-strong)" strokeWidth="1.5" />
+            </svg>
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%',
+              transform: 'translate(-50%,-50%)',
+              width: '18px', height: '18px', borderRadius: '50%',
+              background: 'var(--accent)', opacity: 0.7,
+              boxShadow: '0 0 12px var(--accent)',
+            }} />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
+              No resources yet
+            </p>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--ink-muted)', fontFamily: 'var(--font-sans)', lineHeight: 1.65, maxWidth: '280px' }}>
+              Connect your AWS account and trigger your first scan to populate the dependency graph.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', width: '100%' }}>
+            <a
+              href="/dashboard/accounts"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '7px',
+                padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                fontFamily: 'var(--font-sans)', textDecoration: 'none',
+                background: 'var(--accent)', color: '#000',
+                width: '100%', justifyContent: 'center',
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Connect AWS account
+            </a>
+            <span style={{ fontSize: '11px', color: 'var(--ink-ghost)', fontFamily: 'var(--font-sans)' }}>
+              Read-only IAM role · No agents required
+            </span>
+          </div>
         </div>
       </div>
     )
@@ -486,6 +588,7 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
   // ── Main canvas ───────────────────────────────────────────────────────────────
   return (
     <div className="flex-1 relative" style={{ background: 'var(--canvas)' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {/* Canvas vignette — teal center glow gives depth */}
       <div className="graph-vignette" />
 
@@ -517,6 +620,57 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
                 Use the region picker above to explore your AWS infrastructure
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Zero search results overlay — only show when at least one region is active */}
+      {searchQuery.length > 0 && activeRegions.length > 0 && data && (() => {
+        const q = searchQuery.toLowerCase()
+        const visibleCount = data.nodes.filter(n =>
+          activeRegions.includes(n.region) &&
+          (hiddenTypes.length === 0 || !hiddenTypes.includes(n.type)) &&
+          n.name.toLowerCase().includes(q)
+        ).length
+        return visibleCount === 0
+      })() && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+          style={{ background: 'rgba(5,7,10,0.55)', backdropFilter: 'blur(2px)' }}
+        >
+          <div
+            className="flex flex-col items-center gap-3 text-center pointer-events-auto"
+            style={{
+              background: 'var(--surface-1)', border: '1px solid var(--hairline-strong)',
+              borderRadius: '14px', padding: '28px 32px', maxWidth: '280px',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
+                No results for &ldquo;{searchQuery}&rdquo;
+              </p>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--ink-muted)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+                Try a different resource name, ID, or type.
+              </p>
+            </div>
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 500,
+                fontFamily: 'var(--font-sans)', cursor: 'pointer',
+                border: '1px solid var(--hairline-strong)', background: 'var(--surface-2)',
+                color: 'var(--ink-muted)', transition: 'all 0.15s',
+              }}
+            >
+              Clear search
+            </button>
           </div>
         </div>
       )}
