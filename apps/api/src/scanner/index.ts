@@ -6,8 +6,11 @@ import { scanELB } from './services/elb.js'
 import { scanECS } from './services/ecs.js'
 import { buildGraph } from './graph-builder.js'
 import { writeGraphToNeo4j } from './neo4j-writer.js'
+import { supabase } from '../lib/supabase.js'
 import type { ScanJobInput, ScanResult, ScanRegionResult } from './types.js'
 import type { GraphNode, GraphEdge } from '@liveinfra/shared'
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const SERVICE_NAMES = ['EC2', 'RDS', 'Lambda', 'ELB', 'ECS'] as const
 
@@ -81,9 +84,45 @@ export async function scanAccount(input: ScanJobInput): Promise<ScanResult> {
   const totalNodes = regionResults.reduce((sum, r) => sum + r.nodeCount, 0)
   const totalEdges = regionResults.reduce((sum, r) => sum + r.edgeCount, 0)
   const allErrors = regionResults.flatMap((r) => r.errors)
+  const durationSec = Math.round((Date.parse(completedAt) - Date.parse(startedAt)) / 1000)
 
   const status: ScanResult['status'] =
     allErrors.length === 0 ? 'success' : totalNodes > 0 ? 'partial' : 'failed'
+
+  // Write scan snapshot to Supabase for history (skip for demo/non-UUID customer IDs)
+  if (UUID_RE.test(input.customerId) && totalNodes > 0) {
+    void supabase
+      .from('graph_snapshots')
+      .insert({
+        customer_id:       input.customerId,
+        account_id:        input.accountId,
+        s3_key:            `neo4j/${input.customerId}/${input.accountId}/${completedAt}`,
+        node_count:        totalNodes,
+        edge_count:        totalEdges,
+        scan_duration_sec: durationSec,
+        snapshot_at:       completedAt,
+      })
+      .then(({ error }) => {
+        if (error) console.error('[scanner] graph_snapshots write failed:', error.message)
+      })
+
+    // Update aws_accounts status + last_scan_at
+    void supabase
+      .from('aws_accounts')
+      .update({
+        status:                   status === 'failed' ? 'error' : 'active',
+        last_scan_at:             completedAt,
+        last_scan_resource_count: totalNodes,
+        last_scan_duration_sec:   durationSec,
+        last_error:               allErrors.length > 0 ? allErrors.slice(0, 3).join('; ') : null,
+        updated_at:               completedAt,
+      })
+      .eq('customer_id', input.customerId)
+      .eq('account_id',  input.accountId)
+      .then(({ error }) => {
+        if (error) console.error('[scanner] aws_accounts status update failed:', error.message)
+      })
+  }
 
   return {
     customerId: input.customerId,

@@ -52,9 +52,11 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
     hiddenTypes,
     activeRegions,
     blastRadiusAffectedIds,
+    focusNodeId,
     setSelectedNode,
     setHoveredNode,
     setSearchQuery,
+    setFocusNode,
     toggleType,
   } = useGraphStore()
 
@@ -317,6 +319,23 @@ export default function GraphCanvas({ customerId, accountId }: GraphCanvasProps)
       } catch { /* renderer may have been killed */ }
     }
   }, [selectedNodeId, hoveredNodeId, searchQuery, hiddenTypes, activeRegions, blastRadiusAffectedIds])
+
+  // Animate camera to focusNodeId when set from external source (e.g. auto-RCA toast)
+  useEffect(() => {
+    if (!focusNodeId || !rendererRef.current || !graphRef.current) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sigma = rendererRef.current as any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const graph  = graphRef.current as any
+    try {
+      if (!graph.hasNode(focusNodeId)) return
+      const x = graph.getNodeAttribute(focusNodeId, 'x') as number
+      const y = graph.getNodeAttribute(focusNodeId, 'y') as number
+      sigma.getCamera().animate({ x, y, ratio: 0.35 }, { duration: 500 })
+      setSelectedNode(focusNodeId)
+    } catch { /* best-effort */ }
+    setFocusNode(null)
+  }, [focusNodeId, setSelectedNode, setFocusNode])
 
   // ── Camera controls ───────────────────────────────────────────────────────────
 

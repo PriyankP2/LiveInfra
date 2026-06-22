@@ -14,7 +14,7 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ clerkUserId, email, defaultAccountId }: DashboardClientProps) {
-  const { selectedNodeId, activeRegions, toggleRegion, setActiveRegions, setCachedNodes } = useGraphStore()
+  const { selectedNodeId, activeRegions, toggleRegion, setActiveRegions, setCachedNodes, setResolvedCustomerId } = useGraphStore()
 
   // Resolve real customer UUID; fall back to 'demo' while loading or on error.
   // We only switch away from 'demo' once the real UUID has actual Neo4j data —
@@ -30,7 +30,10 @@ export default function DashboardClient({ clerkUserId, email, defaultAccountId }
       {
         onSuccess: (res) => {
           // Store the real UUID but don't switch yet — we'll check if Neo4j has data
-          if (res.id) setResolvedId(res.id)
+          if (res.id) {
+            setResolvedId(res.id)
+            setResolvedCustomerId(res.id)
+          }
         },
         onError: () => {},
       }

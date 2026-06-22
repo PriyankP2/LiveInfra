@@ -5,6 +5,7 @@ import './globals.css'
 import Providers from './providers'
 import Sidebar from '@/components/layout/Sidebar'
 import CommandPalette from '@/components/layout/CommandPalette'
+import AutoRcaToast from '@/components/layout/AutoRcaToast'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'], display: 'swap' })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], display: 'swap' })
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </div>
             <CommandPalette />
+            <AutoRcaToast />
           </Providers>
         </ClerkProvider>
       </body>

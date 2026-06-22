@@ -11,6 +11,10 @@ interface GraphStore {
   activeRegions: string[]            // only these regions are shown; empty = none selected
   // Cached graph nodes for command palette search — synced by DashboardClient
   cachedNodes: GraphNode[]
+  // Camera focus — set to a nodeId to animate the Sigma camera to that node
+  focusNodeId: string | null
+  // Resolved customer UUID — set by DashboardClient after customer.resolve, used by AutoRcaToast
+  resolvedCustomerId: string | null
   setSelectedNode: (id: string | null) => void
   setHoveredNode: (id: string | null) => void
   setSearchQuery: (q: string) => void
@@ -20,6 +24,8 @@ interface GraphStore {
   toggleRegion: (region: string) => void
   setActiveRegions: (regions: string[]) => void
   setCachedNodes: (nodes: GraphNode[]) => void
+  setFocusNode: (id: string | null) => void
+  setResolvedCustomerId: (id: string | null) => void
 }
 
 export const useGraphStore = create<GraphStore>((set) => ({
@@ -31,6 +37,8 @@ export const useGraphStore = create<GraphStore>((set) => ({
   hiddenTypes: [],
   activeRegions: [],
   cachedNodes: [],
+  focusNodeId: null,
+  resolvedCustomerId: null,
   setSelectedNode: (id) => set({ selectedNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
   setSearchQuery: (q) => set({ searchQuery: q }),
@@ -50,4 +58,6 @@ export const useGraphStore = create<GraphStore>((set) => ({
     })),
   setActiveRegions: (regions) => set({ activeRegions: regions }),
   setCachedNodes: (nodes) => set({ cachedNodes: nodes }),
+  setFocusNode: (id) => set({ focusNodeId: id }),
+  setResolvedCustomerId: (id) => set({ resolvedCustomerId: id }),
 }))

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { trpc } from '@/lib/trpc'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -634,11 +635,39 @@ interface ScansClientProps {
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function ScansClient({ customerId: _customerId }: ScansClientProps) {
+export default function ScansClient({ customerId }: ScansClientProps) {
   const [activeFilter, setActiveFilter] = useState<FilterValue>('all')
 
-  // In production this would be: trpc.accounts.scanHistory.useQuery({ customerId })
-  const scans = MOCK_SCANS
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const trpcAny = trpc as any
+  const historyQuery = trpcAny.accounts?.scanHistory?.useQuery?.(
+    { customerId, limit: 50 },
+    { enabled: !!customerId && customerId !== 'demo', staleTime: 30_000, retry: 1 }
+  ) ?? { data: null, isLoading: false }
+
+  // Map tRPC scan history rows → Scan shape; fall back to mock for demo/loading
+  const scans: Scan[] = useMemo(() => {
+    if (historyQuery.data?.scans?.length) {
+      return historyQuery.data.scans.map((s: {
+        id: string; accountId: string; accountAlias?: string;
+        snapshotAt: string; nodeCount: number; edgeCount: number;
+        durationSec: number | null; status: string
+      }): Scan => ({
+        id:        s.id,
+        accountId: s.accountId,
+        ...(s.accountAlias !== undefined ? { accountAlias: s.accountAlias } : {}),
+        startedAt: s.snapshotAt,
+        completedAt:  s.snapshotAt,
+        status:       s.status === 'completed' ? 'completed' : 'completed',
+        resourceCount: s.nodeCount,
+        edgeCount:    s.edgeCount,
+        // exactOptionalPropertyTypes: only spread durationSec when it's defined
+        ...(s.durationSec !== null ? { durationSec: s.durationSec } : {}),
+        regions:      [],
+      }))
+    }
+    return MOCK_SCANS
+  }, [historyQuery.data])
 
   const accountOptions = useMemo(() => getAccountOptions(scans), [scans])
 

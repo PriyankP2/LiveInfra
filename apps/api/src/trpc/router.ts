@@ -9,6 +9,8 @@ import { env } from '../lib/env.js'
 import { accountsRouter, resolveCustomerId } from './accounts-router.js'
 import { supabase } from '../lib/supabase.js'
 import { router, publicProcedure } from './init.js'
+import { fetchCloudTrailEvents } from '../scanner/cloudtrail.js'
+import { assumeRole } from '../scanner/assume-role.js'
 
 export { router, publicProcedure }
 
@@ -256,6 +258,64 @@ export const appRouter = router({
         }
       }),
   }),
+  // ── Incidents ─────────────────────────────────────────────────────────────
+  incidents: router({
+    list: publicProcedure
+      .input(z.object({
+        customerId: z.string(),
+        limit:      z.number().min(1).max(100).default(20),
+        since:      z.string().optional(), // ISO — only return incidents after this timestamp
+      }))
+      .query(async ({ input }) => {
+        let query = supabase
+          .from('incidents')
+          .select('id, source, title, severity, status, resource_arn, resource_id, triggered_at, created_at')
+          .eq('customer_id', input.customerId)
+          .order('triggered_at', { ascending: false })
+          .limit(input.limit)
+
+        if (input.since) {
+          query = query.gt('triggered_at', input.since)
+        }
+
+        const { data } = await query
+        return (data ?? []).map(row => ({
+          id:          String(row['id'] ?? ''),
+          source:      String(row['source'] ?? ''),
+          title:       String(row['title'] ?? ''),
+          severity:    String(row['severity'] ?? 'low'),
+          status:      String(row['status'] ?? 'open'),
+          resourceArn: row['resource_arn'] ? String(row['resource_arn']) : null,
+          resourceId:  row['resource_id']  ? String(row['resource_id'])  : null,
+          triggeredAt: String(row['triggered_at'] ?? ''),
+          createdAt:   String(row['created_at'] ?? ''),
+        }))
+      }),
+
+    // Latest RCA for an incident
+    getRca: publicProcedure
+      .input(z.object({ incidentId: z.string() }))
+      .query(async ({ input }) => {
+        const { data } = await supabase
+          .from('rca_history')
+          .select('id, root_cause, status, input_tokens, output_tokens, latency_ms, completed_at')
+          .eq('incident_id', input.incidentId)
+          .order('started_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (!data) return null
+        return {
+          id:           String(data['id'] ?? ''),
+          analysis:     data['root_cause'] ? String(data['root_cause']) : null,
+          status:       String(data['status'] ?? 'pending'),
+          inputTokens:  Number(data['input_tokens']  ?? 0),
+          outputTokens: Number(data['output_tokens'] ?? 0),
+          latencyMs:    Number(data['latency_ms']    ?? 0),
+          completedAt:  data['completed_at'] ? String(data['completed_at']) : null,
+        }
+      }),
+  }),
+
   // ── AI RCA ───────────────────────────────────────────────────────────────
   rca: router({
     analyze: publicProcedure
@@ -276,6 +336,9 @@ export const appRouter = router({
         blastAffectedCount: z.number().default(0),
         // Optional: user-supplied incident description to focus the analysis
         incidentContext: z.string().optional(),
+        // Optional: IAM role ARN for CloudTrail evidence enrichment
+        roleArn:    z.string().optional(),
+        externalId: z.string().default('liveinfra'),
       }))
       .mutation(async ({ input }) => {
         if (!env.ANTHROPIC_API_KEY) {
@@ -294,6 +357,31 @@ export const appRouter = router({
               .map(c => `  - ${c.direction === 'out' ? '→' : '←'} ${c.edgeType} ${c.neighborType}:${c.neighborName}`)
               .join('\n')
 
+        // CloudTrail enrichment — gracefully skip if no roleArn or if fetch fails
+        let cloudTrailSection = ''
+        if (input.roleArn) {
+          try {
+            const creds = await assumeRole(input.roleArn, input.externalId, 'LiveInfraRCA')
+            const summary = await fetchCloudTrailEvents({
+              resourceId:   input.resourceId,
+              resourceType: input.resourceType,
+              region:       input.region,
+              credentials:  creds,
+            })
+            if (summary.events.length > 0) {
+              const changes = summary.recentChanges.slice(0, 8)
+                .map(e => `  - ${e.eventTime.slice(11, 19)} ${e.eventName} by ${e.username}`)
+                .join('\n')
+              const errors = summary.errorEvents.slice(0, 5)
+                .map(e => `  - ${e.eventTime.slice(11, 19)} ${e.eventName} → ${e.errorCode}${e.errorMessage ? ': ' + e.errorMessage.slice(0, 80) : ''}`)
+                .join('\n')
+              cloudTrailSection = `\n\n**CloudTrail Evidence (last ${summary.lookbackHours}h — ${summary.events.length} events)**\n`
+              if (changes) cloudTrailSection += `\nRecent changes:\n${changes}`
+              if (errors)  cloudTrailSection += `\n\nErrors:\n${errors}`
+            }
+          } catch { /* CloudTrail enrichment is best-effort */ }
+        }
+
         const systemPrompt = `You are LiveInfra's AI Root Cause Analysis engine, embedded directly in an AWS infrastructure dependency graph tool used by SRE teams.
 
 Your role: given a specific AWS resource and its graph context, produce a concise, actionable RCA that helps engineers understand failure modes, blast radius, and remediation steps.
@@ -309,7 +397,7 @@ Tone: expert, direct, no fluff. Format: use markdown headers and bullet lists. B
 
 **Graph connections** (${input.connections.length} total):
 ${connectionSummary}
-${input.incidentContext ? `\n**Incident context provided by engineer**:\n${input.incidentContext}` : ''}
+${input.incidentContext ? `\n**Incident context provided by engineer**:\n${input.incidentContext}` : ''}${cloudTrailSection}
 
 Respond with:
 1. **Most likely failure modes** for this specific resource type in this dependency context (3-5 bullets)

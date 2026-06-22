@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type Tab = 'general' | 'notifications' | 'api-keys' | 'danger'
+type Tab = 'general' | 'notifications' | 'webhooks' | 'api-keys' | 'danger'
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
 
@@ -321,6 +321,17 @@ const NAV_ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     ),
   },
   {
+    id: 'webhooks',
+    label: 'Webhooks',
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+        <polyline points="15 3 21 3 21 9" />
+        <line x1="10" y1="14" x2="21" y2="3" />
+      </svg>
+    ),
+  },
+  {
     id: 'api-keys',
     label: 'API Keys',
     icon: (
@@ -563,6 +574,173 @@ function NotificationsSection({ showToast }: { showToast: () => void }) {
         last
       />
     </SectionCard>
+  )
+}
+
+// ── Section: Webhooks ──────────────────────────────────────────────────────────
+
+const WEBHOOK_BASE_URL = 'https://your-api.liveinfra.io/webhooks'
+
+type WebhookSource = 'pagerduty' | 'opsgenie' | 'cloudwatch'
+
+function WebhookCard({
+  source,
+  label,
+  description,
+  docs,
+}: {
+  source: WebhookSource
+  label: string
+  description: string
+  docs: string
+}) {
+  const [copied, setCopied] = useState(false)
+  const endpointUrl = `${WEBHOOK_BASE_URL}/${source}/<your-customer-id>`
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(endpointUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
+
+  return (
+    <div
+      style={{
+        border:       '1px solid var(--hairline)',
+        borderRadius: '10px',
+        padding:      '18px 20px',
+        background:   'var(--surface-1)',
+        display:      'flex',
+        flexDirection: 'column',
+        gap:          '10px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '3px' }}>{label}</div>
+          <div style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>{description}</div>
+        </div>
+        <a
+          href={docs}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', whiteSpace: 'nowrap' }}
+        >
+          Docs ↗
+        </a>
+      </div>
+
+      {/* Endpoint URL */}
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+        <code
+          style={{
+            flex: 1, padding: '7px 10px', borderRadius: '6px', fontSize: '11px',
+            fontFamily: 'var(--font-mono)', color: 'var(--ink-muted)',
+            background: 'var(--surface-0)', border: '1px solid var(--hairline)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}
+        >
+          {endpointUrl}
+        </code>
+        <button
+          onClick={copy}
+          style={{
+            padding:    '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 500,
+            cursor:     'pointer', border: '1px solid var(--hairline)',
+            background: copied ? 'rgba(23,178,106,0.12)' : 'var(--surface-2)',
+            color:      copied ? '#17b26a' : 'var(--ink-muted)',
+            transition: 'all 0.15s', whiteSpace: 'nowrap',
+          }}
+        >
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+
+      {/* PagerDuty-specific: signature note */}
+      {source === 'pagerduty' && (
+        <div
+          style={{
+            fontSize: '11px', color: 'var(--ink-subtle)', lineHeight: '1.5',
+            padding: '8px 10px', borderRadius: '6px', background: 'rgba(0,196,180,0.06)',
+            border: '1px solid rgba(0,196,180,0.15)',
+          }}
+        >
+          <strong style={{ color: 'var(--ink-muted)' }}>Auto-RCA:</strong> When a PagerDuty alert fires,
+          LiveInfra automatically runs an AI RCA on the affected resource and shows it as a toast notification
+          in the graph. Add <code style={{ fontFamily: 'var(--font-mono)', fontSize: '10px' }}>resource_arn</code> to
+          your alert&apos;s <code style={{ fontFamily: 'var(--font-mono)', fontSize: '10px' }}>custom_details</code> to
+          enable one-click graph linking.
+        </div>
+      )}
+    </div>
+  )
+}
+
+function WebhooksSection() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', marginBottom: '6px' }}>Webhooks</h2>
+        <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.5' }}>
+          Connect your alerting tools so LiveInfra can automatically trigger AI RCA when incidents fire.
+          Replace <code style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>&lt;your-customer-id&gt;</code> with
+          your UUID from Settings → API Keys.
+        </p>
+      </div>
+
+      <WebhookCard
+        source="pagerduty"
+        label="PagerDuty"
+        description="V2 webhooks — auto-RCA on incident.trigger events"
+        docs="https://developer.pagerduty.com/docs/webhooks/v2-overview/"
+      />
+      <WebhookCard
+        source="opsgenie"
+        label="OpsGenie"
+        description="Action-based webhooks via the Integration settings"
+        docs="https://support.atlassian.com/opsgenie/docs/create-a-webhook-integration/"
+      />
+      <WebhookCard
+        source="cloudwatch"
+        label="CloudWatch Alarms (via SNS)"
+        description="Subscribe an SNS topic to this endpoint for alarm notifications"
+        docs="https://docs.aws.amazon.com/sns/latest/dg/sns-http-https-endpoint-as-subscriber.html"
+      />
+
+      {/* Setup guide */}
+      <div
+        style={{
+          border:       '1px solid var(--hairline)',
+          borderRadius: '10px',
+          padding:      '18px 20px',
+          background:   'var(--surface-1)',
+        }}
+      >
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--ink)', marginBottom: '10px' }}>
+          PagerDuty quick-setup
+        </div>
+        {[
+          'In PagerDuty: Services → your service → Integrations → Add Integration → Generic V2 Webhook',
+          'Paste the endpoint URL above (with your customer ID)',
+          'Copy the signing secret PagerDuty generates — contact support to store it in LiveInfra',
+          'Trigger a test alert — you\'ll see a toast notification in the graph within seconds',
+        ].map((step, i) => (
+          <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '8px', fontSize: '12px', color: 'var(--ink-muted)' }}>
+            <span
+              style={{
+                width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,196,180,0.12)', color: 'var(--accent)',
+                fontSize: '10px', fontWeight: 700,
+              }}
+            >
+              {i + 1}
+            </span>
+            <span style={{ lineHeight: '1.5', paddingTop: '2px' }}>{step}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -1239,6 +1417,7 @@ export default function SettingsClient() {
             >
               {activeTab === 'general' && <GeneralSection showToast={showToast} />}
               {activeTab === 'notifications' && <NotificationsSection showToast={showToast} />}
+              {activeTab === 'webhooks' && <WebhooksSection />}
               {activeTab === 'api-keys' && <ApiKeysSection />}
               {activeTab === 'danger' && <DangerZoneSection />}
             </div>
