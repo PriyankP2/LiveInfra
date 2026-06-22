@@ -4,6 +4,7 @@ import { logger } from '../lib/logger.js'
 import { supabase } from '../lib/supabase.js'
 import { runQuery } from '../neo4j/client.js'
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from '../lib/env.js'
 import { assumeRole } from '../scanner/assume-role.js'
 import { fetchCloudTrailEvents } from '../scanner/cloudtrail.js'
@@ -198,9 +199,11 @@ async function runAutoRca(params: {
       } catch { /* CloudTrail enrichment is best-effort */ }
     }
 
-    if (!env.ANTHROPIC_API_KEY) {
+    const hasAnthropic = !!env.ANTHROPIC_API_KEY
+    const hasGemini    = !!env.GEMINI_API_KEY
+    if (!hasAnthropic && !hasGemini) {
       await supabase.from('rca_history').update({
-        root_cause:    'AI RCA not configured — add ANTHROPIC_API_KEY',
+        root_cause:    'AI RCA not configured — add ANTHROPIC_API_KEY or GEMINI_API_KEY to apps/api/.env',
         status:        'complete',
         completed_at:  new Date().toISOString(),
         latency_ms:    Date.now() - startedAt,
@@ -209,7 +212,8 @@ async function runAutoRca(params: {
       return
     }
 
-    const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+    const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' })
+    const gemini    = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null
 
     const resourceLine = node
       ? `**Resource**: ${node.type} \`${node.name}\` (${node.region} / ${node.accountId})`
@@ -229,17 +233,29 @@ Provide a concise RCA (under 350 words):
 
 Be direct. This is a live incident.`
 
-    const response = await anthropic.messages.create({
-      model:      env.ANTHROPIC_MODEL,
-      max_tokens: 900,
-      system:     'You are LiveInfra\'s AI RCA engine. Analyze AWS infrastructure incidents concisely and actionably. Use markdown formatting.',
-      messages:   [{ role: 'user', content: userPrompt }],
-    })
+    const systemMsg = 'You are LiveInfra\'s AI RCA engine. Analyze AWS infrastructure incidents concisely and actionably. Use markdown formatting.'
 
-    const analysis = response.content
-      .filter(b => b.type === 'text')
-      .map(b => (b as { type: 'text'; text: string }).text)
-      .join('')
+    let analysis = ''
+    let inputTokens = 0
+    let outputTokens = 0
+
+    if (hasAnthropic) {
+      const response = await anthropic.messages.create({
+        model:      env.ANTHROPIC_MODEL,
+        max_tokens: 900,
+        system:     systemMsg,
+        messages:   [{ role: 'user', content: userPrompt }],
+      })
+      analysis     = response.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')
+      inputTokens  = response.usage.input_tokens
+      outputTokens = response.usage.output_tokens
+    } else if (gemini) {
+      const model  = gemini.getGenerativeModel({ model: env.GEMINI_MODEL })
+      const result = await model.generateContent(`${systemMsg}\n\n${userPrompt}`)
+      analysis     = result.response.text()
+      inputTokens  = Math.ceil((systemMsg.length + userPrompt.length) / 4)
+      outputTokens = Math.ceil(analysis.length / 4)
+    }
 
     const latencyMs = Date.now() - startedAt
 
@@ -247,8 +263,8 @@ Be direct. This is a live incident.`
       root_cause:              analysis,
       status:                  'complete',
       completed_at:            new Date().toISOString(),
-      input_tokens:            response.usage.input_tokens,
-      output_tokens:           response.usage.output_tokens,
+      input_tokens:            inputTokens,
+      output_tokens:           outputTokens,
       latency_ms:              latencyMs,
       cloudtrail_events_count: cloudTrailSection ? parseInt(cloudTrailSection.match(/(\d+) events/)?.[1] ?? '0') : 0,
       ...(node ? { affected_services: { nodeId: node.id, type: node.type, region: node.region } } : {}),
@@ -259,7 +275,7 @@ Be direct. This is a live incident.`
       resource_id: node?.id ?? null,
     }).eq('id', incidentId)
 
-    logger.info({ incidentId, latencyMs, tokens: response.usage.input_tokens + response.usage.output_tokens }, 'Auto-RCA complete')
+    logger.info({ incidentId, latencyMs, tokens: inputTokens + outputTokens }, 'Auto-RCA complete')
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
     logger.error({ incidentId, err: msg }, 'Auto-RCA failed')

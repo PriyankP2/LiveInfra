@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { runQuery } from '../neo4j/client.js'
 import { calcBlastScore, scoreToSeverity, type GraphData } from '@liveinfra/shared'
 import type { GraphNode, GraphEdge } from '@liveinfra/shared'
@@ -15,6 +16,7 @@ import { assumeRole } from '../scanner/assume-role.js'
 export { router, publicProcedure }
 
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' })
+const gemini    = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null
 
 const COMMON_SCAN_REGIONS = [
   'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'ca-central-1',
@@ -341,9 +343,12 @@ export const appRouter = router({
         externalId: z.string().default('liveinfra'),
       }))
       .mutation(async ({ input }) => {
-        if (!env.ANTHROPIC_API_KEY) {
+        // Determine which AI provider to use — Claude preferred, Gemini as fallback
+        const hasAnthropic = !!env.ANTHROPIC_API_KEY
+        const hasGemini    = !!env.GEMINI_API_KEY
+        if (!hasAnthropic && !hasGemini) {
           return {
-            analysis: '**AI RCA is not configured.** Add `ANTHROPIC_API_KEY` to your API environment to enable this feature.',
+            analysis: '**AI RCA is not configured.**\n\nAdd at least one of the following to `apps/api/.env`:\n- `ANTHROPIC_API_KEY` — Claude (recommended, best reasoning)\n- `GEMINI_API_KEY` — Gemini (24× cheaper, great for high-volume)',
             model: 'none',
             promptTokens: 0,
             completionTokens: 0,
@@ -408,17 +413,33 @@ Respond with:
 Keep the entire response under 400 words. Be concrete and specific to ${input.resourceType}.`
 
         try {
-          const response = await anthropic.messages.create({
-            model:      env.ANTHROPIC_MODEL,
-            max_tokens: 1024,
-            system:     systemPrompt,
-            messages:   [{ role: 'user', content: userPrompt }],
-          })
+          let text = ''
+          let modelUsed = ''
+          let promptTokens = 0
+          let completionTokens = 0
 
-          const text = response.content
-            .filter(b => b.type === 'text')
-            .map(b => (b as { type: 'text'; text: string }).text)
-            .join('')
+          if (hasAnthropic) {
+            // ── Claude (Anthropic) ──────────────────────────────────────────
+            const response = await anthropic.messages.create({
+              model:      env.ANTHROPIC_MODEL,
+              max_tokens: 1024,
+              system:     systemPrompt,
+              messages:   [{ role: 'user', content: userPrompt }],
+            })
+            text             = response.content.filter(b => b.type === 'text').map(b => (b as { type: 'text'; text: string }).text).join('')
+            modelUsed        = env.ANTHROPIC_MODEL
+            promptTokens     = response.usage.input_tokens
+            completionTokens = response.usage.output_tokens
+          } else if (gemini) {
+            // ── Gemini (Google) — fallback ──────────────────────────────────
+            const model  = gemini.getGenerativeModel({ model: env.GEMINI_MODEL })
+            const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`)
+            text         = result.response.text()
+            modelUsed    = env.GEMINI_MODEL
+            // Gemini doesn't expose token counts in the same way; approximate
+            promptTokens     = Math.ceil((systemPrompt.length + userPrompt.length) / 4)
+            completionTokens = Math.ceil(text.length / 4)
+          }
 
           // Track usage in Supabase for billing/rate limiting
           void supabase
@@ -429,9 +450,9 @@ Keep the entire response under 400 words. Be concrete and specific to ${input.re
 
           return {
             analysis:         text,
-            model:            env.ANTHROPIC_MODEL,
-            promptTokens:     response.usage.input_tokens,
-            completionTokens: response.usage.output_tokens,
+            model:            modelUsed,
+            promptTokens,
+            completionTokens,
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)

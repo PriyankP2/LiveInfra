@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { useGraphStore } from '@/components/graph/graphStore'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -360,6 +362,18 @@ function AlertCard({ alert }: { alert: Alert }) {
   const statusLabel = isResolved ? 'Resolved' : cfg.label
   const statusColor = isResolved ? 'var(--status-healthy)' : cfg.color
 
+  const router = useRouter()
+  const { setActiveRegions, setFocusNode } = useGraphStore()
+
+  const handleViewGraph = useCallback(() => {
+    // Set region filter so the graph shows nodes in this alert's region
+    setActiveRegions([alert.region])
+    // Try to camera-focus on the node (works when resource name matches a Neo4j node ID)
+    setFocusNode(alert.resource)
+    // Don't setSearchQuery — it hides all non-matching nodes and leaves a blank canvas
+    router.push('/dashboard')
+  }, [alert.region, alert.resource, router, setActiveRegions, setFocusNode])
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -488,8 +502,8 @@ function AlertCard({ alert }: { alert: Alert }) {
           >
             {statusLabel}
           </span>
-          <a
-            href="/dashboard"
+          <button
+            onClick={handleViewGraph}
             style={{
               fontSize: '11px',
               fontFamily: 'var(--font-sans)',
@@ -497,16 +511,20 @@ function AlertCard({ alert }: { alert: Alert }) {
               color: 'var(--accent)',
               textDecoration: 'none',
               letterSpacing: '0.01em',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
             }}
             onMouseEnter={(e) => {
-              ;(e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-hover)'
+              ;(e.currentTarget as HTMLButtonElement).style.color = '#00a89b'
             }}
             onMouseLeave={(e) => {
-              ;(e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent)'
+              ;(e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'
             }}
           >
             View Graph →
-          </a>
+          </button>
         </div>
       </div>
 
