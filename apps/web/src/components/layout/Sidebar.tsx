@@ -74,6 +74,9 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname()
 
+  // Hide sidebar on the public landing page
+  if (pathname === '/') return null
+
   return (
     <aside
       className="flex flex-col items-center py-3 shrink-0"

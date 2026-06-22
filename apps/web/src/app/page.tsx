@@ -1,5 +1,8 @@
 import Link from 'next/link'
 
+// No request-time data — statically render at build time for best CDN performance
+export const dynamic = 'force-static'
+
 // ─── Sub-components (all server-safe, no interactivity) ──────────────────────
 
 function NavBar() {

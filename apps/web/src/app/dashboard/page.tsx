@@ -23,8 +23,8 @@ export default async function DashboardPage() {
     <DashboardClient
       clerkUserId={userId}
       email={email}
-      // Legacy hardcoded account for the demo seed data
-      defaultAccountId="975050024946"
+      // Demo seed account — override via NEXT_PUBLIC_DEMO_ACCOUNT_ID in production
+      defaultAccountId={process.env['NEXT_PUBLIC_DEMO_ACCOUNT_ID'] ?? '975050024946'}
     />
   )
 }

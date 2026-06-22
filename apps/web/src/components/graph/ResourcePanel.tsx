@@ -126,6 +126,13 @@ export default function ResourcePanel({ nodeId, graphData, customerId }: Resourc
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rcaMutation = (trpc as any).rca?.analyze?.useMutation?.() ?? null
 
+  // Look up the matched aws_account to get roleArn for CloudTrail enrichment
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const accountsList = (trpc as any).accounts?.list?.useQuery?.({ customerId }) ?? { data: null }
+  const matchedAccount = accountsList.data?.accounts?.find(
+    (a: { accountId: string }) => a.accountId === graphData?.nodes?.find((n) => n.id === nodeId)?.accountId
+  )
+
   if (!nodeId || !graphData) return null
 
   const node = graphData.nodes.find((n) => n.id === nodeId)
@@ -535,6 +542,8 @@ export default function ResourcePanel({ nodeId, graphData, customerId }: Resourc
                         })),
                         blastAffectedCount: blastRadius.data?.affected.length ?? 0,
                         incidentContext: rcaContext || undefined,
+                        roleArn:    matchedAccount?.roleArn ?? '',
+                        externalId: matchedAccount?.externalId ?? 'liveinfra',
                       })
                     }}
                     disabled={!rcaMutation}
@@ -621,6 +630,8 @@ export default function ResourcePanel({ nodeId, graphData, customerId }: Resourc
                         })),
                         blastAffectedCount: blastRadius.data?.affected.length ?? 0,
                         incidentContext: rcaContext || undefined,
+                        roleArn:    matchedAccount?.roleArn ?? '',
+                        externalId: matchedAccount?.externalId ?? 'liveinfra',
                       })}
                       style={{
                         fontSize: '10px', color: 'var(--ink-subtle)', background: 'none', border: 'none',
