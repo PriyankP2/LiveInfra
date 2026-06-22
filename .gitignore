@@ -31,3 +31,11 @@ Thumbs.db
 
 # Parquet snapshots (managed by scanner, not tracked in git)
 *.parquet
+
+# Tool/agent configs (local development)
+   apps/web/.agents/
+   apps/web/.codeartsdoer/
+   apps/web/.kiro/
+   apps/web/.qwen/
+   apps/web/skills/
+   apps/web/skills-lock.json

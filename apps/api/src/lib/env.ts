@@ -20,6 +20,11 @@ const envSchema = z.object({
 
   // Anthropic
   ANTHROPIC_API_KEY: z.string().min(1),
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+
+  // Gemini
+  GEMINI_API_KEY: z.string().min(1),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
 
   // Clerk
   CLERK_SECRET_KEY: z.string().min(1),
