@@ -92,6 +92,18 @@ export async function scanLambda(
         properties: { createdAt: now },
       })
     }
+
+    // Edges: Lambda → each SecurityGroup (MEMBER_OF)
+    for (const sgId of fn.VpcConfig?.SecurityGroupIds ?? []) {
+      const sgArn = `arn:aws:ec2:${region}:${accountId}:security-group/${sgId}`
+      edges.push({
+        id: makeEdgeId(fnArn, sgArn, 'MEMBER_OF'),
+        source: fnArn,
+        target: sgArn,
+        type: 'MEMBER_OF',
+        properties: { createdAt: now },
+      })
+    }
   }
 
   return { nodes, edges }

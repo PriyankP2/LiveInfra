@@ -41,8 +41,15 @@ export const appRouter = router({
           { customerId, ...(accountId ? { accountId } : {}) }
         )
 
+        const parseSafe = (val: unknown, fallback: Record<string, unknown>) => {
+          try { return typeof val === 'string' ? JSON.parse(val) : fallback } catch { return fallback }
+        }
+
         const nodes: GraphNode[] = nodeRows.map((row) => {
-          const n = row['n'] as Record<string, unknown>
+          // Neo4j returns Node objects — properties live at n.properties, not n
+          const neo4jNode = row['n'] as { properties?: Record<string, unknown> } | Record<string, unknown>
+          const n: Record<string, unknown> =
+            (neo4jNode as { properties?: Record<string, unknown> }).properties ?? (neo4jNode as Record<string, unknown>)
           return {
             id: String(n['id'] ?? ''),
             type: String(n['type'] ?? 'EC2') as GraphNode['type'],
@@ -51,8 +58,8 @@ export const appRouter = router({
             region: String(n['region'] ?? ''),
             customerId: String(n['customer_id'] ?? ''),
             lastSeen: String(n['last_seen'] ?? ''),
-            tags: (n['tags'] as Record<string, string>) ?? {},
-            properties: (n['properties'] as Record<string, string | number | boolean | null>) ?? {},
+            tags: parseSafe(n['tags'], {}),
+            properties: parseSafe(n['properties'], {}),
           }
         })
 

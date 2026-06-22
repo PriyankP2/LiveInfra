@@ -124,6 +124,19 @@ export async function scanRDS(
       })
     }
 
+    // Edges: DB instance → SecurityGroups (MEMBER_OF)
+    for (const sgRef of dbInstance.VpcSecurityGroups ?? []) {
+      if (!sgRef.VpcSecurityGroupId) continue
+      const sgArn = `arn:aws:ec2:${region}:${accountId}:security-group/${sgRef.VpcSecurityGroupId}`
+      edges.push({
+        id: makeEdgeId(instanceArn, sgArn, 'MEMBER_OF'),
+        source: instanceArn,
+        target: sgArn,
+        type: 'MEMBER_OF',
+        properties: { createdAt: now },
+      })
+    }
+
     // Edge: DB instance → cluster (MEMBER_OF)
     if (dbInstance.DBClusterIdentifier) {
       const clusterArn = clusterArnMap.get(dbInstance.DBClusterIdentifier)

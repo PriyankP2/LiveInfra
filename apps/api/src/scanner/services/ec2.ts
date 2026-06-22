@@ -140,6 +140,19 @@ export async function scanEC2(
     }
     sgNodes.push(sgNode)
     nodes.push(sgNode)
+
+    // Edge: SecurityGroup → VPC (PART_OF)
+    // Anchors each SG to its VPC so they're connected in the graph topology
+    if (sg.VpcId) {
+      const vpcArn = `arn:aws:ec2:${region}:${accountId}:vpc/${sg.VpcId}`
+      edges.push({
+        id: makeEdgeId(sgArn, vpcArn, 'PART_OF'),
+        source: sgArn,
+        target: vpcArn,
+        type: 'PART_OF',
+        properties: { createdAt: now },
+      })
+    }
   }
 
   // ── EC2 Instances ─────────────────────────────────────────────────────────

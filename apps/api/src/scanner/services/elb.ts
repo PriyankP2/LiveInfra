@@ -1,6 +1,8 @@
 import {
   ElasticLoadBalancingV2Client,
   DescribeLoadBalancersCommand,
+  DescribeTargetGroupsCommand,
+  DescribeTargetHealthCommand,
   type LoadBalancer,
 } from '@aws-sdk/client-elastic-load-balancing-v2'
 import type { GraphNode, GraphEdge } from '@liveinfra/shared'
@@ -10,7 +12,6 @@ function makeEdgeId(source: string, target: string, type: string): string {
   return `${source}__${target}__${type}`
 }
 
-/** Paginate DescribeLoadBalancers and return all load balancer objects. */
 async function listAllLoadBalancers(client: ElasticLoadBalancingV2Client): Promise<LoadBalancer[]> {
   const lbs: LoadBalancer[] = []
   let marker: string | undefined
@@ -46,7 +47,6 @@ export async function scanELB(
     if (!lb.LoadBalancerArn || !lb.LoadBalancerName) continue
 
     const lbArn = lb.LoadBalancerArn
-    // ELBv2 type field is 'application' | 'network' | 'gateway'
     const lbType = lb.Type === 'application' ? 'ALB' : 'NLB'
 
     nodes.push({
@@ -77,7 +77,7 @@ export async function scanELB(
       })
     }
 
-    // Edges: LB → each Subnet in its availability zones (MEMBER_OF)
+    // Edges: LB → each Subnet (MEMBER_OF)
     for (const az of lb.AvailabilityZones ?? []) {
       if (!az.SubnetId) continue
       const subnetArn = `arn:aws:ec2:${region}:${accountId}:subnet/${az.SubnetId}`
@@ -88,6 +88,55 @@ export async function scanELB(
         type: 'MEMBER_OF',
         properties: { createdAt: now },
       })
+    }
+
+    // Edges: ALB → SecurityGroups (MEMBER_OF)
+    // NLBs don't have security groups — this field is only set for ALBs
+    for (const sgId of lb.SecurityGroups ?? []) {
+      const sgArn = `arn:aws:ec2:${region}:${accountId}:security-group/${sgId}`
+      edges.push({
+        id: makeEdgeId(lbArn, sgArn, 'MEMBER_OF'),
+        source: lbArn,
+        target: sgArn,
+        type: 'MEMBER_OF',
+        properties: { createdAt: now },
+      })
+    }
+
+    // Edges: LB → EC2 instances via target groups (DEPENDS_ON)
+    // This is the key dependency edge: ALB depends on its backend EC2 targets.
+    try {
+      const tgsRes = await elbv2.send(
+        new DescribeTargetGroupsCommand({ LoadBalancerArn: lbArn })
+      )
+      for (const tg of tgsRes.TargetGroups ?? []) {
+        if (!tg.TargetGroupArn) continue
+
+        const healthRes = await elbv2.send(
+          new DescribeTargetHealthCommand({ TargetGroupArn: tg.TargetGroupArn })
+        )
+        for (const desc of healthRes.TargetHealthDescriptions ?? []) {
+          const targetId = desc.Target?.Id
+          if (!targetId) continue
+
+          // EC2 instance targets have IDs like "i-0abc123def456"
+          if (targetId.startsWith('i-')) {
+            const ec2Arn = `arn:aws:ec2:${region}:${accountId}:instance/${targetId}`
+            edges.push({
+              id: makeEdgeId(lbArn, ec2Arn, 'DEPENDS_ON'),
+              source: lbArn,
+              target: ec2Arn,
+              type: 'DEPENDS_ON',
+              properties: {
+                createdAt: now,
+                edgeType: `target-group:${desc.TargetHealth?.State ?? 'unknown'}`,
+              },
+            })
+          }
+        }
+      }
+    } catch {
+      // DescribeTargetGroups can fail if lb has no target groups — not an error
     }
   }
 
