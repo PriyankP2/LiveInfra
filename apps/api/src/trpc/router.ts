@@ -9,11 +9,11 @@ import { scanAccount } from '../scanner/index.js'
 import { env } from '../lib/env.js'
 import { accountsRouter, resolveCustomerId } from './accounts-router.js'
 import { supabase } from '../lib/supabase.js'
-import { router, publicProcedure } from './init.js'
+import { router, publicProcedure, authedProcedure } from './init.js'
 import { fetchCloudTrailEvents } from '../scanner/cloudtrail.js'
 import { assumeRole } from '../scanner/assume-role.js'
 
-export { router, publicProcedure }
+export { router, publicProcedure, authedProcedure }
 
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY ?? '' })
 const gemini    = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null
@@ -36,7 +36,7 @@ export const appRouter = router({
   // Resolves a Clerk user ID to the customer's Supabase UUID.
   // Creates the record on first call (upsert behaviour).
   customer: router({
-    resolve: publicProcedure
+    resolve: authedProcedure
       .input(z.object({ clerkUserId: z.string(), email: z.string().optional() }))
       .mutation(async ({ input }) => {
         const id = await resolveCustomerId(input.clerkUserId, input.email)
@@ -57,7 +57,7 @@ export const appRouter = router({
   // ── Graph ────────────────────────────────────────────────────────────────
   graph: router({
     // Full topology for a customer account
-    topology: publicProcedure
+    topology: authedProcedure
       .input(z.object({ customerId: z.string(), accountId: z.string().optional() }))
       .query(async ({ input }): Promise<GraphData> => {
         const { customerId, accountId } = input
@@ -131,10 +131,11 @@ export const appRouter = router({
       }),
 
     // Blast radius for a single node
-    blastRadius: publicProcedure
+    blastRadius: authedProcedure
       .input(z.object({ customerId: z.string(), resourceId: z.string(), maxHops: z.number().min(1).max(10).default(10) }))
       .query(async ({ input }) => {
         const { customerId, resourceId, maxHops } = input
+        const start = Date.now()
 
         const rows = await runQuery<{
           downstream: Record<string, unknown>
@@ -155,7 +156,7 @@ export const appRouter = router({
           { customerId, resourceId }
         )
 
-        const start = Date.now()
+        const queryMs = Date.now() - start
         const affected = rows.map((row) => {
           const n = row['downstream'] as Record<string, unknown>
           const score = calcBlastScore(
@@ -174,7 +175,7 @@ export const appRouter = router({
         return {
           sourceNodeId: resourceId,
           affected,
-          queryMs: Date.now() - start,
+          queryMs,
         }
       }),
   }),
@@ -182,7 +183,7 @@ export const appRouter = router({
   // ── Scanner ───────────────────────────────────────────────────────────────
   scanner: router({
     // Fire-and-forget trigger: returns immediately; scan runs in background.
-    trigger: publicProcedure
+    trigger: authedProcedure
       .input(
         z.object({
           customerId: z.string(),
@@ -201,7 +202,7 @@ export const appRouter = router({
 
     // Trigger a scan using stored credentials (from Supabase aws_accounts table,
     // with fallback to SCAN_ROLE_ARN env var for legacy single-account setups).
-    triggerDefault: publicProcedure
+    triggerDefault: authedProcedure
       .input(
         z.object({
           customerId: z.string(),
@@ -248,7 +249,7 @@ export const appRouter = router({
       }),
 
     // Returns the latest scan metadata stored in Neo4j for a given account.
-    status: publicProcedure
+    status: authedProcedure
       .input(z.object({ customerId: z.string(), accountId: z.string() }))
       .query(async ({ input }) => {
         const rows = await runQuery<{ lastSeen: string; nodeCount: number }>(
@@ -267,7 +268,7 @@ export const appRouter = router({
   }),
   // ── Incidents ─────────────────────────────────────────────────────────────
   incidents: router({
-    list: publicProcedure
+    list: authedProcedure
       .input(z.object({
         customerId: z.string(),
         limit:      z.number().min(1).max(100).default(20),
@@ -300,7 +301,7 @@ export const appRouter = router({
       }),
 
     // Latest RCA for an incident
-    getRca: publicProcedure
+    getRca: authedProcedure
       .input(z.object({ incidentId: z.string() }))
       .query(async ({ input }) => {
         const { data } = await supabase
@@ -325,7 +326,7 @@ export const appRouter = router({
 
   // ── AI RCA ───────────────────────────────────────────────────────────────
   rca: router({
-    analyze: publicProcedure
+    analyze: authedProcedure
       .input(z.object({
         customerId:   z.string(),
         resourceId:   z.string(),
@@ -446,11 +447,9 @@ Keep the entire response under 400 words. Be concrete and specific to ${input.re
             completionTokens = Math.ceil(text.length / 4)
           }
 
-          // Track usage in Supabase for billing/rate limiting
+          // Track usage for billing/rate limiting — fire-and-forget atomic increment
           void supabase
-            .from('customers')
-            .update({ rca_calls_this_month: supabase.rpc('increment', { x: 1 }) })
-            .eq('id', input.customerId)
+            .rpc('increment_rca_calls', { p_customer_id: input.customerId })
             .then(() => {})
 
           return {

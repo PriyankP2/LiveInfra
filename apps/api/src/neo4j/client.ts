@@ -1,16 +1,14 @@
 import neo4j, { type Driver } from 'neo4j-driver'
 import { logger } from '../lib/logger.js'
+import { env } from '../lib/env.js'
 
 let _driver: Driver | null = null
 
 export function getNeo4jDriver(): Driver {
   if (_driver) return _driver
   _driver = neo4j.driver(
-    process.env['NEO4J_URI'] ?? '',
-    neo4j.auth.basic(
-      process.env['NEO4J_USERNAME'] ?? 'neo4j',
-      process.env['NEO4J_PASSWORD'] ?? ''
-    )
+    env.NEO4J_URI,
+    neo4j.auth.basic(env.NEO4J_USERNAME, env.NEO4J_PASSWORD)
   )
   return _driver
 }

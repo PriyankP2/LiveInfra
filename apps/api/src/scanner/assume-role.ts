@@ -6,7 +6,9 @@ export async function assumeRole(
   externalId: string,
   sessionName = 'LiveInfraScan'
 ): Promise<AWSCredentials> {
-  const sts = new STSClient({ region: 'us-east-1' })
+  // STS is a global service but the endpoint is regional for latency.
+  // Default us-east-1 works everywhere; override with STS_REGION env var.
+  const sts = new STSClient({ region: process.env['STS_REGION'] ?? 'us-east-1' })
 
   const res = await sts.send(
     new AssumeRoleCommand({

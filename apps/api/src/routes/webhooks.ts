@@ -309,13 +309,15 @@ export const webhookRoutes: FastifyPluginAsync = async (app) => {
 
     // Validate PD-Signature: "v1=<hex>,v1=<hex>..." — check any v1 signature matches
     const pdSig = req.headers['x-pagerduty-signature'] as string | undefined
-    if (pdSig) {
-      const sigs = pdSig.split(',').map(s => s.trim().replace(/^v1=/, ''))
-      const valid = sigs.some(sig => validateHmac(rawBody, config.signing_secret, sig))
-      if (!valid) {
-        logger.warn({ customerId }, 'PagerDuty webhook: invalid signature')
-        return reply.status(401).send({ error: 'Invalid signature' })
-      }
+    if (!pdSig) {
+      logger.warn({ customerId }, 'PagerDuty webhook: missing x-pagerduty-signature header')
+      return reply.status(401).send({ error: 'Missing signature' })
+    }
+    const sigs = pdSig.split(',').map(s => s.trim().replace(/^v1=/, ''))
+    const valid = sigs.some(sig => validateHmac(rawBody, config.signing_secret, sig))
+    if (!valid) {
+      logger.warn({ customerId }, 'PagerDuty webhook: invalid signature')
+      return reply.status(401).send({ error: 'Invalid signature' })
     }
 
     // Update last_received_at
@@ -378,6 +380,29 @@ export const webhookRoutes: FastifyPluginAsync = async (app) => {
   // ── OpsGenie ────────────────────────────────────────────────────────────────
   app.post('/opsgenie/:customerId', async (req, reply) => {
     const { customerId } = req.params as { customerId: string }
+
+    // Look up signing secret for this customer
+    const { data: config } = await supabase
+      .from('webhook_configs')
+      .select('signing_secret, is_active')
+      .eq('customer_id', customerId)
+      .eq('type', 'opsgenie')
+      .eq('is_active', true)
+      .single()
+
+    if (!config) {
+      logger.warn({ customerId }, 'OpsGenie webhook: no active config')
+      return reply.status(403).send({ error: 'No active OpsGenie webhook config' })
+    }
+
+    // OpsGenie doesn't sign payloads natively — customers must configure X-OG-Token header
+    // in their OpsGenie webhook integration settings matching the signing_secret here.
+    const ogToken = req.headers['x-og-token'] as string | undefined
+    if (!ogToken || ogToken !== config.signing_secret) {
+      logger.warn({ customerId }, 'OpsGenie webhook: missing or invalid x-og-token header')
+      return reply.status(401).send({ error: 'Invalid token' })
+    }
+
     const body = req.body as {
       action?: string
       alert?: {
@@ -432,6 +457,24 @@ export const webhookRoutes: FastifyPluginAsync = async (app) => {
   // ── CloudWatch / SNS ─────────────────────────────────────────────────────────
   app.post('/cloudwatch/:customerId', async (req, reply) => {
     const { customerId } = req.params as { customerId: string }
+
+    // Look up signing secret for this customer
+    const { data: config } = await supabase
+      .from('webhook_configs')
+      .select('signing_secret, is_active')
+      .eq('customer_id', customerId)
+      .eq('type', 'cloudwatch')
+      .eq('is_active', true)
+      .single()
+
+    if (!config) {
+      logger.warn({ customerId }, 'CloudWatch webhook: no active config')
+      return reply.status(403).send({ error: 'No active CloudWatch webhook config' })
+    }
+
+    // SNS doesn't support custom auth headers — customers embed the secret as ?token=<signing_secret>
+    // in the SNS subscription endpoint URL so only known sources can trigger processing.
+    const queryToken = (req.query as Record<string, string | undefined>)['token']
     const body = req.body as {
       Type?: string
       SubscribeURL?: string
@@ -439,11 +482,16 @@ export const webhookRoutes: FastifyPluginAsync = async (app) => {
       Subject?: string
     }
 
-    // Handle SNS subscription confirmation
+    // Handle SNS subscription confirmation — allow through so AWS can confirm the endpoint
     if (body.Type === 'SubscriptionConfirmation' && body.SubscribeURL) {
       logger.info({ customerId }, 'CloudWatch SNS: subscription confirmation request received')
       // Auto-confirm would need an HTTP fetch of the SubscribeURL — left for Phase 2
       return reply.status(200).send({ ok: true })
+    }
+
+    if (!queryToken || queryToken !== config.signing_secret) {
+      logger.warn({ customerId }, 'CloudWatch webhook: missing or invalid token query param')
+      return reply.status(401).send({ error: 'Invalid token' })
     }
 
     // Parse SNS notification

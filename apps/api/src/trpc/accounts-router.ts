@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts'
-import { router, publicProcedure } from './init.js'
+import { router, authedProcedure } from './init.js'
 import { supabase } from '../lib/supabase.js'
 import { assumeRole } from '../scanner/assume-role.js'
 
@@ -43,7 +43,7 @@ export async function resolveCustomerId(clerkUserId: string, email?: string): Pr
 
 export const accountsRouter = router({
   // ── List all AWS accounts for a customer ────────────────────────────────────
-  list: publicProcedure
+  list: authedProcedure
     .input(z.object({ customerId: z.string() }))
     .query(async ({ input }) => {
       const { data, error } = await supabase
@@ -73,7 +73,7 @@ export const accountsRouter = router({
     }),
 
   // ── Validate a Role ARN by attempting STS AssumeRole ────────────────────────
-  validate: publicProcedure
+  validate: authedProcedure
     .input(z.object({
       roleArn:    z.string().min(20),
       externalId: z.string().default('liveinfra'),
@@ -114,7 +114,7 @@ export const accountsRouter = router({
     }),
 
   // ── Add a new AWS account ────────────────────────────────────────────────────
-  add: publicProcedure
+  add: authedProcedure
     .input(z.object({
       customerId:   z.string(),
       accountId:    z.string().regex(/^\d{12}$/, 'Must be a 12-digit AWS account ID'),
@@ -148,7 +148,7 @@ export const accountsRouter = router({
     }),
 
   // ── Delete an account ────────────────────────────────────────────────────────
-  delete: publicProcedure
+  delete: authedProcedure
     .input(z.object({ customerId: z.string(), id: z.string().uuid() }))
     .mutation(async ({ input }) => {
       const { error } = await supabase
@@ -163,7 +163,7 @@ export const accountsRouter = router({
     }),
 
   // ── Update account status (used by scanner after completion) ─────────────────
-  updateStatus: publicProcedure
+  updateStatus: authedProcedure
     .input(z.object({
       customerId:    z.string(),
       accountId:     z.string(),
@@ -199,7 +199,7 @@ export const accountsRouter = router({
     }),
 
   // ── Scan history (from graph_snapshots) ──────────────────────────────────────
-  scanHistory: publicProcedure
+  scanHistory: authedProcedure
     .input(z.object({ customerId: z.string(), limit: z.number().min(1).max(100).default(25) }))
     .query(async ({ input }) => {
       const { data, error } = await supabase
