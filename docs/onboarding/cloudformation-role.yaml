@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Creates a cross-account IAM role that allows LiveInfra to perform
+  read-only scans of your AWS account using STS AssumeRole.
+  No agents are installed. LiveInfra cannot modify any resources.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "LiveInfra Configuration"
+        Parameters:
+          - LiveInfraAccountId
+          - ExternalId
+          - RoleName
+    ParameterLabels:
+      LiveInfraAccountId:
+        default: "LiveInfra AWS Account ID"
+      ExternalId:
+        default: "External ID (from LiveInfra dashboard)"
+      RoleName:
+        default: "IAM Role Name"
+
+Parameters:
+  LiveInfraAccountId:
+    Type: String
+    Description: >
+      The AWS Account ID of the LiveInfra SaaS platform. Provided on the
+      LiveInfra dashboard under Settings > Add Account.
+    AllowedPattern: "^[0-9]{12}$"
+    ConstraintDescription: Must be a 12-digit AWS account ID.
+
+  ExternalId:
+    Type: String
+    Description: >
+      The unique External ID generated for your organization by LiveInfra.
+      Copy this from the LiveInfra dashboard before deploying this template.
+    MinLength: 8
+    MaxLength: 128
+    AllowedPattern: "^[a-zA-Z0-9\\-_]+$"
+    ConstraintDescription: Alphanumeric characters, hyphens, and underscores only.
+
+  RoleName:
+    Type: String
+    Default: LiveInfraScanner
+    Description: Name of the IAM role to create. Change only if you have a naming convention to follow.
+    MinLength: 1
+    MaxLength: 64
+    AllowedPattern: "^[a-zA-Z0-9+=,.@\\-_]+$"
+
+Resources:
+  LiveInfraScannerRole:
+    Type: AWS::IAM::Role
+    DeletionPolicy: Delete
+    Properties:
+      RoleName: !Ref RoleName
+      Description: >
+        Read-only cross-account role for LiveInfra infrastructure scanning.
+        Grants List/Describe/Get permissions only — no write access.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowLiveInfraAssumeRole
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${LiveInfraAccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+      Policies:
+        - PolicyName: LiveInfraReadOnlyPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: LiveInfraReadOnly
+                Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeRouteTables
+                  - ec2:DescribeInternetGateways
+                  - ec2:DescribeNatGateways
+                  - rds:DescribeDBInstances
+                  - rds:DescribeDBClusters
+                  - rds:DescribeDBSubnetGroups
+                  - lambda:ListFunctions
+                  - lambda:GetFunctionConfiguration
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:DescribeTargetHealth
+                  - elasticloadbalancing:DescribeListeners
+                  - ecs:ListClusters
+                  - ecs:DescribeClusters
+                  - ecs:ListServices
+                  - ecs:DescribeServices
+                  - ecs:ListTasks
+                  - ecs:DescribeTasks
+                  - cloudwatch:GetMetricStatistics
+                  - cloudwatch:ListMetrics
+                  - cloudtrail:LookupEvents
+                Resource: "*"
+      Tags:
+        - Key: ManagedBy
+          Value: LiveInfra
+        - Key: Purpose
+          Value: InfrastructureScanning
+
+Outputs:
+  RoleArn:
+    Description: >
+      Copy this ARN and paste it into the LiveInfra dashboard under
+      Settings > Add Account > Role ARN.
+    Value: !GetAtt LiveInfraScannerRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleArn"
+
+  ExternalId:
+    Description: >
+      The External ID used in the trust policy. Keep this value — LiveInfra
+      will use it on every AssumeRole call to verify the request is legitimate.
+    Value: !Ref ExternalId
+    Export:
+      Name: !Sub "${AWS::StackName}-ExternalId"
+
+  RoleName:
+    Description: The name of the created IAM role.
+    Value: !Ref LiveInfraScannerRole
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleName"

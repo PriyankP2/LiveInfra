@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { runQuery } from '../neo4j/client.js'
 import { calcBlastScore, scoreToSeverity, type GraphData } from '@liveinfra/shared'
 import type { GraphNode, GraphEdge } from '@liveinfra/shared'
+import { scanAccount } from '../scanner/index.js'
 
 const t = initTRPC.create()
 
@@ -122,6 +123,45 @@ export const appRouter = router({
           sourceNodeId: resourceId,
           affected,
           queryMs: Date.now() - start,
+        }
+      }),
+  }),
+
+  // ── Scanner ───────────────────────────────────────────────────────────────
+  scanner: router({
+    // Fire-and-forget trigger: returns immediately; scan runs in background.
+    trigger: publicProcedure
+      .input(
+        z.object({
+          customerId: z.string(),
+          accountId: z.string(),
+          roleArn: z.string(),
+          externalId: z.string(),
+          regions: z.array(z.string()).min(1).default(['us-east-1']),
+        })
+      )
+      .mutation(async ({ input }) => {
+        void scanAccount(input).catch((err: unknown) => {
+          console.error('[scanner] scanAccount failed:', err)
+        })
+        return { queued: true, startedAt: new Date().toISOString() }
+      }),
+
+    // Returns the latest scan metadata stored in Neo4j for a given account.
+    status: publicProcedure
+      .input(z.object({ customerId: z.string(), accountId: z.string() }))
+      .query(async ({ input }) => {
+        const rows = await runQuery<{ lastSeen: string; nodeCount: number }>(
+          `MATCH (n:Resource {customer_id: $customerId, account_id: $accountId})
+           RETURN max(n.last_seen) AS lastSeen, count(n) AS nodeCount`,
+          { customerId: input.customerId, accountId: input.accountId }
+        )
+        const row = rows[0]
+        return {
+          customerId: input.customerId,
+          accountId: input.accountId,
+          lastScanAt: row?.lastSeen ?? null,
+          nodeCount: row?.nodeCount ?? 0,
         }
       }),
   }),
